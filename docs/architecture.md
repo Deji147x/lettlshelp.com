@@ -26,7 +26,7 @@ The two sites are **separate WordPress installs** on one hosting plan that allow
 /privacy-policy/      Privacy Policy
 /terms-disclaimers/   Terms & Disclaimers
 ```
-The Life site's main navigation also links out to Leadership Systems. Each footer links to the sister practice.
+The header navigation stays on-site. Each footer links to the sister practice, and cross-link bands on Home and Services point to it.
 
 ## Theme plan (phase 2, after wireframe approval)
 

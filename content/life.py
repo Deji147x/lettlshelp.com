@@ -33,7 +33,7 @@ SITE = {
                  "prenuptial agreement", "conflict coaching", "ADR", "alternative dispute resolution"],
     "nav": [("", "Home"), ("about", "About"), ("services", "Services"), ("how-it-works", "How It Works"),
             ("resources", "Resources"), ("faq", "FAQ"), ("contact", "Contact")],
-    "nav_external": (SISTER_URL, "Leadership Systems"),
+    "nav_external": None,  # sister site is linked from the footer and cross-link bands, not the header
     "policies": [("ethics", "Ethics & Compliance"), ("privacy-policy", "Privacy Policy"),
                  ("terms-disclaimers", "Terms & Disclaimers")],
     "sister": ("Transformative Leadership Systems", SISTER_URL,
