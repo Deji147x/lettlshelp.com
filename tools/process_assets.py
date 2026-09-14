@@ -153,7 +153,7 @@ def build_site(slug, cfg):
     scale = 440 / full.height
     logo_og = full.resize((int(full.width * scale), 440), Image.LANCZOS)
     og.alpha_composite(logo_og, ((1200 - logo_og.width) // 2, (630 - logo_og.height) // 2))
-    og.convert("RGB").save(out / "og-image.jpg", quality=86, optimize=True)
+    og.convert("RGB").save(out / "og-image.jpg", quality=82, optimize=True, progressive=True)
 
     manifest = {"_logo": list(full.size)}
     for name, filename in cfg["photos"].items():
@@ -162,7 +162,8 @@ def build_site(slug, cfg):
         for bound in (1600, 800):
             copy = photo.copy()
             copy.thumbnail((bound, bound), Image.LANCZOS)
-            copy.save(out / "img" / f"{name}-{bound}.jpg", quality=76, optimize=True, progressive=True)
+            copy.save(out / "img" / f"{name}-{bound}.jpg", quality=74, optimize=True, progressive=True)
+            copy.save(out / "img" / f"{name}-{bound}.webp", quality=72, method=6)
             manifest[name][str(bound)] = list(copy.size)
         print(f"  {name}: {manifest[name]}")
     (out / "img" / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

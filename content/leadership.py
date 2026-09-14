@@ -151,7 +151,7 @@ CROSSLINK = {"type": "crosslink", "wf": "Pattern: tls/sister-site-link", "tone":
 PAGES = [
     {
         "slug": "", "label": "Home",
-        "title": "B2B Arbitration & Mediation | Transformative Leadership Systems",
+        "title": "B2B Arbitration & ADR | Transformative Leadership Systems",
         "description": "B2B arbitration, med-arb, business mediation, negotiation support, and conflict coaching "
                        "for non-consumer-facing businesses and nonprofits.",
         "sections": [
@@ -271,7 +271,7 @@ PAGES = [
     },
     {
         "slug": "services", "label": "Services",
-        "title": "Arbitration & Negotiation | Transformative Leadership Systems",
+        "title": "Arbitration Services | Transformative Leadership Systems",
         "description": "B2B arbitration and med-arb, business and organizational mediation, negotiation support "
                        "including NDAs, and conflict coaching for leaders.",
         "sections": [
@@ -320,7 +320,7 @@ PAGES = [
     },
     {
         "slug": "how-it-works", "label": "How It Works",
-        "title": "How Our ADR Process Works | Transformative Leadership Systems",
+        "title": "Our ADR Process | Transformative Leadership Systems",
         "description": "Reach out, complete documented eligibility screening, confirm the right process, and meet "
                        "virtually or in person. Free referrals if we can't assist.",
         "sections": [
@@ -346,7 +346,7 @@ PAGES = [
     },
     {
         "slug": "resources", "label": "Resources", "schema_type": "CollectionPage",
-        "title": "ADR Resources for Leaders | Transformative Leadership Systems",
+        "title": "ADR Resources | Transformative Leadership Systems",
         "description": "Articles on arbitration, med-arb, business mediation, negotiation, board governance, and "
                        "conflict coaching for leaders.",
         "sections": [
@@ -421,11 +421,12 @@ PAGES = [
         "slug": "privacy-policy", "label": "Privacy Policy",
         "title": "Privacy Policy | Transformative Leadership Systems",
         "description": "How Transformative Leadership Systems collects, uses, and protects information shared "
-                       "through this website.",
+                       "through this website, including contact forms, screening, and analytics.",
         "sections": [
             {"type": "page_hero", "eyebrow": "Policies", "h1": "Privacy policy",
              "lede": "How we collect, use, and protect your information."},
-            {"type": "legal", "tone": "white", "draft": LEGAL_REVIEW, "outline": PRIVACY_OUTLINE},
+            {"type": "legal", "tone": "white", "h2": "Policy outline", "draft": LEGAL_REVIEW,
+             "outline": PRIVACY_OUTLINE},
         ],
     },
     {

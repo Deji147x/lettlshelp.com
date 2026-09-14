@@ -7,8 +7,8 @@ The owner's keywords: mediation, arbitration, negotiation, conflict coaching, AD
 ### Transformative Life Solutions
 | Page | Primary keywords | Title tag |
 |---|---|---|
-| Home | mediation, conflict coaching, mediator, ADR | Family Mediation & Conflict Coaching \| Transformative Life Solutions |
-| Services | divorce mediation, parenting plan, separation agreement, prenuptial agreement, conflict coaching | Divorce Mediation & Parenting Plans \| Transformative Life Solutions |
+| Home | mediation, conflict coaching, mediator, ADR | Family Mediation & Coaching \| Transformative Life Solutions |
+| Services | divorce mediation, parenting plan, separation agreement, prenuptial agreement, conflict coaching | Divorce Mediation Services \| Transformative Life Solutions |
 | FAQ | divorce mediation, parenting plans, separation/prenuptial agreement, arbitration (cross-link) | Mediation FAQ \| Transformative Life Solutions |
 | Contact | mediator | Contact a Mediator \| Transformative Life Solutions |
 | Resources | mediation resources (blog categories below) | Mediation Resources \| Transformative Life Solutions |
@@ -18,8 +18,10 @@ Arbitration, negotiation, and NDA are mentioned on the Life site **only** as lin
 ### Transformative Leadership Systems
 | Page | Primary keywords | Title tag |
 |---|---|---|
-| Home | arbitration, business mediation, negotiation, ADR | B2B Arbitration & Mediation \| Transformative Leadership Systems |
-| Services | arbitration, med-arb, negotiation, NDA, conflict coaching | Arbitration & Negotiation \| Transformative Leadership Systems |
+| Home | arbitration, business mediation, negotiation, ADR | B2B Arbitration & ADR \| Transformative Leadership Systems |
+| Services | arbitration, med-arb, negotiation, NDA, conflict coaching | Arbitration Services \| Transformative Leadership Systems |
+
+All titles are 60 characters or fewer, so Google shouldn't cut them off. Secondary keywords (parenting plans, negotiation, NDAs) go in each page's H1/H2 and meta description.
 | FAQ | arbitration vs mediation, NDA, eligibility | Arbitration FAQ \| Transformative Leadership Systems |
 
 Every page has a unique title and a meta description of about 110–160 characters (see `content/*.py`). The WordPress SEO plugin takes these over at launch.
@@ -34,7 +36,13 @@ Every page has a unique title and a meta description of about 110–160 characte
   - `BreadcrumbList` on inner pages
   - `FAQPage` on the FAQ page only
 - `sitemap.xml`, `robots.txt`, and `site.webmanifest` per site; favicons at 16, 32, 48, 180, 192, and 512 px.
-- Wireframe pages are `noindex` so previews never compete with the real sites.
+- **No `noindex` tags anywhere.** Canonical tags point each page to its production URL instead.
+- **HTTPS enforced:** `wireframes/<site>/.htaccess` forces a 301 to `https://` and removes `www`. It also sends HSTS and security headers and enables compression and browser caching. Merge it above the WordPress block at launch.
+- **Images:** WebP with JPEG fallback (`<picture>`), responsive `srcset`, explicit width/height (no layout shift), lazy loading below the fold, and a preloaded hero image for faster LCP.
+- **More schema:** a `Person` (founder) node on every page, and one `Service` node per service on each Services page.
+- **Preview links:** in the preview, sister-site links point to the local wireframe so nothing is broken before the domains are live. Production uses the real domains.
+- **Quality gate:** `python tools/seo_check.py` checks every item on the owner's SEO checklist and exits with an error if anything fails. Run it before each commit.
+- **Backlinks:** see `docs/backlink-strategy.md`.
 - Internal linking: service cards → service anchors; every page ends in a CTA to Contact; scope notices → Ethics; Terms reached from How It Works and the footer; sister-site links on both sites.
 
 ## Google Search Console

@@ -130,7 +130,7 @@ CROSSLINK = {"type": "crosslink", "wf": "Pattern: tls/sister-site-link", "tone":
 PAGES = [
     {
         "slug": "", "label": "Home",
-        "title": "Family Mediation & Conflict Coaching | Transformative Life Solutions",
+        "title": "Family Mediation & Coaching | Transformative Life Solutions",
         "description": "Trauma-informed family mediation, divorce mediation, parenting plans, and conflict coaching. "
                        "A private ADR practice with virtual and in-person options.",
         "sections": [
@@ -258,7 +258,7 @@ PAGES = [
     },
     {
         "slug": "services", "label": "Services",
-        "title": "Divorce Mediation & Parenting Plans | Transformative Life Solutions",
+        "title": "Divorce Mediation Services | Transformative Life Solutions",
         "description": "Family and divorce mediation, parenting plans, interpersonal mediation, workplace "
                        "facilitation, and conflict coaching. Virtual and in-person.",
         "sections": [
@@ -410,11 +410,12 @@ PAGES = [
         "slug": "privacy-policy", "label": "Privacy Policy",
         "title": "Privacy Policy | Transformative Life Solutions",
         "description": "How Transformative Life Solutions collects, uses, and protects information shared through "
-                       "this website.",
+                       "this website, including contact forms, screening, and analytics.",
         "sections": [
             {"type": "page_hero", "eyebrow": "Policies", "h1": "Privacy policy",
              "lede": "How we collect, use, and protect your information."},
-            {"type": "legal", "tone": "white", "draft": LEGAL_REVIEW, "outline": PRIVACY_OUTLINE},
+            {"type": "legal", "tone": "white", "h2": "Policy outline", "draft": LEGAL_REVIEW,
+             "outline": PRIVACY_OUTLINE},
         ],
     },
     {

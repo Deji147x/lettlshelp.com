@@ -13,6 +13,7 @@ import json
 import re
 import shutil
 import sys
+from datetime import date
 from html import escape
 from pathlib import Path
 
@@ -27,7 +28,9 @@ from icons import ICONS  # noqa: E402
 OUT = ROOT / "wireframes"
 DESIGN = ROOT / "design-system"
 YEAR = 2026
-WIREFRAME = True  # adds noindex, the review banner, and the notes toggle
+WIREFRAME = True  # adds the review banner, the notes toggle, and local sister-site links
+MODULES = [life, leadership]
+IMG_SIZES = "(min-width: 860px) 560px, 100vw"
 
 
 def attr(value):
@@ -76,12 +79,18 @@ def icon(name):
     return f'<span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24">{ICONS[name]}</svg></span>'
 
 
-def img(ctx, name, alt, sizes="(min-width: 860px) 560px, 100vw", eager=False):
+def srcset(ctx, name, ext):
     big, small = ctx.manifest[name]["1600"], ctx.manifest[name]["800"]
+    return f'{ctx.a}img/{name}-800.{ext} {small[0]}w, {ctx.a}img/{name}-1600.{ext} {big[0]}w'
+
+
+def img(ctx, name, alt, sizes=IMG_SIZES, eager=False):
+    """WebP with JPEG fallback; explicit dimensions prevent layout shift (CLS)."""
+    big = ctx.manifest[name]["1600"]
     loading = 'fetchpriority="high"' if eager else 'loading="lazy" decoding="async"'
-    return (f'<img src="{ctx.a}img/{name}-1600.jpg" '
-            f'srcset="{ctx.a}img/{name}-800.jpg {small[0]}w, {ctx.a}img/{name}-1600.jpg {big[0]}w" '
-            f'sizes="{sizes}" width="{big[0]}" height="{big[1]}" alt="{attr(alt)}" {loading}>')
+    return (f'<picture><source type="image/webp" srcset="{srcset(ctx, name, "webp")}" sizes="{sizes}">'
+            f'<img src="{ctx.a}img/{name}-1600.jpg" srcset="{srcset(ctx, name, "jpg")}" sizes="{sizes}" '
+            f'width="{big[0]}" height="{big[1]}" alt="{attr(alt)}" {loading}></picture>')
 
 
 def button(ctx, pair, cls):
@@ -331,14 +340,22 @@ def schema(ctx):
         {"@type": "ProfessionalService", "@id": org_id, "name": site["name"], "url": base,
          "logo": base + "assets/logo.png", "image": base + "assets/og-image.jpg",
          "description": site["footer_blurb"], "telephone": C.PHONE_SCHEMA, "email": C.EMAIL,
-         "founder": {"@type": "Person", "name": C.FOUNDER, "sameAs": [C.LINKEDIN]},
+         "founder": {"@id": base + "#founder"},
          "knowsAbout": site["keywords"],
          "contactPoint": {"@type": "ContactPoint", "contactType": "customer service", "telephone": C.PHONE_SCHEMA,
                           "email": C.EMAIL, "availableLanguage": "English"}},
         {"@type": "WebSite", "@id": base + "#website", "url": base, "name": site["name"], "inLanguage": "en-US",
          "publisher": {"@id": org_id}},
         webpage,
+        {"@type": "Person", "@id": base + "#founder", "name": C.FOUNDER, "jobTitle": "Founder",
+         "worksFor": {"@id": org_id}, "sameAs": [C.LINKEDIN]},
     ]
+    if page["slug"] == "services":
+        for s in page["sections"]:
+            if s["type"] == "split" and s.get("id"):
+                graph.append({"@type": "Service", "@id": f'{ctx.url()}#{s["id"]}', "url": f'{ctx.url()}#{s["id"]}',
+                              "name": strip_tags(s["eyebrow"]), "serviceType": strip_tags(s["h2"]),
+                              "description": strip_tags(s["paras"][0]), "provider": {"@id": org_id}})
     if page["slug"]:
         webpage["breadcrumb"] = {"@id": ctx.url() + "#breadcrumb"}
         graph.append({"@type": "BreadcrumbList", "@id": ctx.url() + "#breadcrumb", "itemListElement": [
@@ -359,7 +376,10 @@ def head(ctx):
               f"gtag('js',new Date());gtag('config','{site['ga4_id']}');</script>")
     else:
         ga = "<!-- GA4: set ga4_id (G-XXXXXXXXXX Measurement ID) in content; in WordPress use Site Kit -->"
-    robots = '<meta name="robots" content="noindex, nofollow">' if WIREFRAME else ""
+    hero = next((s for s in page["sections"] if s["type"] == "hero"), None)
+    # Preload the hero (LCP) image so it starts downloading before CSS is parsed.
+    preload = (f'<link rel="preload" as="image" type="image/webp" fetchpriority="high" '
+               f'imagesrcset="{srcset(ctx, hero["image"], "webp")}" imagesizes="{IMG_SIZES}">') if hero else ""
     return f'''<!doctype html>
 <html lang="en-US">
 <head>
@@ -367,7 +387,6 @@ def head(ctx):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)}</title>
 <meta name="description" content="{attr(desc)}">
-{robots}
 <link rel="canonical" href="{url}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_US">
@@ -395,6 +414,7 @@ def head(ctx):
 <link rel="stylesheet" href="{site["fonts"]}">
 <link rel="stylesheet" href="{ctx.a}css/base.css">
 <link rel="stylesheet" href="{ctx.a}css/{site["css"]}">
+{preload}
 {ga}
 <script type="application/ld+json">{json.dumps(schema(ctx), ensure_ascii=False)}</script>
 </head>
@@ -456,6 +476,13 @@ def render_page(site, page):
     ctx = Ctx(site, page)
     body = "".join(RENDER[s["type"]](ctx, s) for s in page["sections"])
     html = head(ctx) + header(ctx) + f'<main id="main" tabindex="-1">{body}</main>\n' + footer(ctx)
+    if WIREFRAME:
+        # Preview only: sister-site links point at the local wireframe until the real domains are live,
+        # so there are no broken links. Canonical, Open Graph, and schema URLs keep the production domains.
+        for other in MODULES:
+            if other.SITE is not site:
+                host = re.escape(other.SITE["domain"])
+                html = re.sub(rf'(<a\s[^>]*?href="){host}/?"', rf'\g<1>{ctx.up}../{other.SITE["slug"]}/"', html)
     dest = OUT / site["slug"] / page["slug"] / "index.html" if page["slug"] else OUT / site["slug"] / "index.html"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(html, encoding="utf-8")
@@ -469,13 +496,55 @@ def site_files(site, pages):
     shutil.copy2(DESIGN / "base.css", root / "assets" / "css" / "base.css")
     shutil.copy2(DESIGN / site["css"], root / "assets" / "css" / site["css"])
     shutil.copy2(DESIGN / "app.js", root / "assets" / "js" / "app.js")
-    urls = "".join(f'  <url><loc>{site["domain"]}/{p["slug"] + "/" if p["slug"] else ""}</loc></url>\n' for p in pages)
+    today = date.today().isoformat()
+    urls = "".join(f'  <url><loc>{site["domain"]}/{p["slug"] + "/" if p["slug"] else ""}</loc>'
+                   f'<lastmod>{today}</lastmod></url>\n' for p in pages)
     (root / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
                                       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                                       f'{urls}</urlset>\n', encoding="utf-8")
     (root / "robots.txt").write_text("# Production robots.txt (WordPress/SEO plugin generates the live one)\n"
                                      f"User-agent: *\nAllow: /\n\nSitemap: {site['domain']}/sitemap.xml\n",
                                      encoding="utf-8")
+    host = site["domain"].split("//", 1)[1]
+    (root / ".htaccess").write_text(f"""# Production .htaccess for {host} (Apache / LiteSpeed, e.g. Hostinger).
+# Place these rules ABOVE the "# BEGIN WordPress" block; leave the WordPress block unchanged.
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# Enforce HTTPS (301)
+RewriteCond %{{HTTPS}} !=on
+RewriteCond %{{HTTP:X-Forwarded-Proto}} !https
+RewriteRule ^ https://%{{HTTP_HOST}}%{{REQUEST_URI}} [L,R=301]
+# One canonical host: https://{host} (no www)
+RewriteCond %{{HTTP_HOST}} ^www\\.(.+)$ [NC]
+RewriteRule ^ https://%1%{{REQUEST_URI}} [L,R=301]
+</IfModule>
+
+<IfModule mod_headers.c>
+# HSTS: add "; includeSubDomains; preload" only once every subdomain serves HTTPS
+Header always set Strict-Transport-Security "max-age=31536000"
+Header always set Content-Security-Policy "upgrade-insecure-requests"
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# Compression + browser caching (Core Web Vitals)
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml application/javascript application/json application/ld+json image/svg+xml
+</IfModule>
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresByType image/webp "access plus 1 year"
+ExpiresByType image/jpeg "access plus 1 year"
+ExpiresByType image/png "access plus 1 year"
+ExpiresByType image/x-icon "access plus 1 year"
+ExpiresByType text/css "access plus 1 month"
+ExpiresByType application/javascript "access plus 1 month"
+ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+""", encoding="utf-8")
     manifest = {"name": site["name"], "short_name": site["word_bottom"], "start_url": "/", "display": "browser",
                 "background_color": "#FFFFFF", "theme_color": site["theme_color"],
                 "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"},
@@ -492,7 +561,7 @@ def hub(sites):
         blocks.append(f'<section><h2>{s["name"]}</h2><p><code>{s["domain"]}</code></p><ul>{links}</ul></section>')
     html = f'''<!doctype html>
 <html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow"><title>TLS Wireframes</title>
+<title>TLS Wireframes</title>
 <style>body{{font:16px/1.6 system-ui,sans-serif;margin:0;background:#F4F7F8;color:#1C2B33}}main{{max-width:960px;margin:0 auto;padding:3rem 1.5rem}}
 .grid{{display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}}section{{background:#fff;border-radius:16px;padding:1.5rem 1.75rem;border:1px solid #D5E0E2}}
 h1{{font-family:Georgia,serif;color:#003853}}h2{{font-family:Georgia,serif;margin:.2rem 0}}a{{color:#006B7B}}li{{margin:.25rem 0}}</style></head>
@@ -504,7 +573,7 @@ h1{{font-family:Georgia,serif;color:#003853}}h2{{font-family:Georgia,serif;margi
 
 
 def main():
-    sites = [life, leadership]
+    sites = MODULES
     for module in sites:
         site_files(module.SITE, module.PAGES)
         for page in module.PAGES:
