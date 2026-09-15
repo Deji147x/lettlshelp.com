@@ -28,7 +28,7 @@ Written 2026-09-14 when this project moved out of an unrelated session. **Read t
 | Keywords | Split by service. The Life site mentions arbitration, negotiation, and NDAs only as links to Leadership Systems |
 | Header | "Leadership Systems ↗" was **removed** from the Life header at the user's request; the sister site is linked from the footer and cross-link bands only |
 | SEO checklist (user-supplied) | Every item is implemented and enforced by `tools/seo_check.py`: meta titles ≤60 chars, descriptions, alt text, one H1 plus heading order, canonical, og:image, schema, sitemap, robots, HTTPS `.htaccess`, WebP, internal links, mobile. **Avoid:** noindex (removed) and broken links (0) |
-| Git workflow | Push straight to `main`; no pull requests. The repo is **PUBLIC**, so never commit API keys or passwords. The GA4 Measurement ID and GSC token are fine |
+| Git workflow | **As of 2026-09-15, every change goes through a pull request:** create a branch off `main`, commit, push the branch, and open a PR into `main` with `gh pr create`. Don't push directly to `main`. (Commits up to `63a1baf` went straight to `main` before this rule.) The repo is **PUBLIC**, so never commit API keys or passwords. The GA4 Measurement ID and GSC token are fine |
 | Content rule | Never invent credentials, testimonials, client stories, or statistics. Unsourced copy carries a `draft` note that renders as a yellow "Review" flag |
 
 ## Current state
