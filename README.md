@@ -10,7 +10,7 @@ Wireframes and the design system for two related but separate WordPress websites
 TransformativeLifeSolutions.com and TransformativeLeadershipSystems.com come later; change each
 site's `domain` and `base` in `content/` then, and 301-redirect the old paths.
 
-Owner: Tanika L. Smith · Services@lettlshelp.com (Life) · Support@lettlshelp.com (Leadership) · +1 (240) 650-0007
+Owner: Tanika L. Smith · services@lettlshelp.com (Life) · support@lettlshelp.com (Leadership) · +1 (240) 650-0007
 
 ## Status
 **Phase 1: HTML wireframe (this commit).** All 10 pages per site are branded, responsive, and SEO-ready, with integration slots for screening, booking, and e-commerce.

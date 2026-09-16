@@ -9,7 +9,7 @@ from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIAL
 from screening import (LIFE_INTRO, LIFE_QUESTIONS, ROLES, STOP_REFERRALS, STOP_TEXT, STOP_TITLE)
 
 # Owner's instruction (2026-09-16): every call to action on this site goes to this address.
-EMAIL = "Services@lettlshelp.com"
+EMAIL = "services@lettlshelp.com"
 
 # Both practices share lettlshelp.com for now (owner's decision, 2026-09-16). Life Solutions sits
 # at the root; Leadership Systems sits under /leadership-systems/. When the vanity domains go live,

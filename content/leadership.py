@@ -8,8 +8,8 @@ from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIAL
                     PRIVACY_OUTLINE, REFERRALS, RULE17, TERMS_OUTLINE)
 from screening import (LEADERSHIP_INTRO, LEADERSHIP_QUESTIONS, ROLES, STOP_REFERRALS, STOP_TEXT, STOP_TITLE)
 
-# Owner's instruction (2026-09-16) for this site. The Life site uses Services@lettlshelp.com.
-EMAIL = "Support@lettlshelp.com"
+# Owner's instruction (2026-09-16) for this site. The Life site uses services@lettlshelp.com.
+EMAIL = "support@lettlshelp.com"
 
 # Shares lettlshelp.com with Life Solutions for now (owner's decision, 2026-09-16); this site is
 # served under /leadership-systems/. Future home: TransformativeLeadershipSystems.com.
