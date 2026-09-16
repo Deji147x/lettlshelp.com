@@ -387,7 +387,9 @@ def intake_question(q, n, roles):
 def r_intake(ctx, s):
     """Screening questionnaire. Dropdown answers reveal follow-up boxes; ineligible answers stop it."""
     site = ctx.site
-    head, hid = heading(ctx, s)
+    # "intro" here is a list of paragraphs rendered by paras() below, so keep it away from
+    # heading(), which expects a single string and would print the list itself.
+    head, hid = heading(ctx, dict(s, intro=None))
     questions = "".join(intake_question(q, i, s["roles"]) for i, q in enumerate(s["questions"], start=1))
     referrals = "".join(f"<li>{r}</li>" for r in s["stop_referrals"])
     stop = (f'<div class="stop-banner" role="status" hidden><h3>{s["stop_title"]}</h3><p>{s["stop_text"]}</p>'
@@ -414,11 +416,35 @@ def r_intake(ctx, s):
     return section(s, f'<div class="intake">{head}{paras(s.get("intro"))}{form}{outro}</div>', hid=hid)
 
 
+def r_booking(ctx, s):
+    """Google Calendar appointment scheduling.
+
+    Set SITE["booking_url"] to the appointment schedule's embed URL (it ends in `?gv=true`) and the
+    real calendar is embedded. Until then this renders the placeholder with the ways to get in touch.
+    """
+    site = ctx.site
+    head, hid = heading(ctx, s)
+    url = site.get("booking_url")
+    if url:
+        body = (f'<div class="booking-embed"><iframe src="{attr(url)}" width="100%" height="700" '
+                f'loading="lazy" style="border:0" '
+                f'title="Schedule a consultation with {attr(site["name"])}"></iframe></div>')
+    else:
+        body = (f'<div class="booking-placeholder">{icon("calendar")}'
+                f'<p class="booking-title">Online booking is being set up.</p>'
+                f'<p>In the meantime, call or text '
+                f'<a href="tel:{C.PHONE_TEL}" {cta("call-booking", ctx)}>{C.PHONE}</a>, email '
+                f'<a href="mailto:{site["email"]}" {cta("email-booking", ctx)}>{site["email"]}</a>, or '
+                f'<a href="{ctx.href("begin-intake")}" {cta("intake-from-booking", ctx)}>start the '
+                f'screening</a> and we will arrange a time with you.</p></div>')
+    return section(s, f"{head}{body}{slot_html(C.BOOKING_SETUP)}", hid=hid)
+
+
 RENDER = {
     "hero": r_hero, "page_hero": r_page_hero, "text": r_text, "cards": r_cards, "split": r_split,
     "steps": r_steps, "notlist": r_notlist, "faq": r_faq, "list": r_list, "crosslink": r_crosslink,
     "cta": r_cta, "slot": r_slot, "disclaimers": r_disclaimers, "legal": r_legal, "posts": r_posts,
-    "contact": r_contact, "intake": r_intake,
+    "contact": r_contact, "intake": r_intake, "booking": r_booking,
 }
 
 
