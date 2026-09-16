@@ -92,6 +92,43 @@ FAQ = [
     {"q": "How do I get started?",
      "a": f'Call or text <a href="tel:+12406500007">{PHONE}</a>, email <a href="mailto:{EMAIL}">{EMAIL}</a>, '
           f'or send a brief message through the contact page.'},
+    # Added 2026-09-16: questions organizations commonly search for. Answers that need the owner's
+    # own numbers or an attorney's wording carry a draft flag instead of invented detail.
+    {"q": "How much do arbitration, mediation, and negotiation support cost?",
+     "a": "Fees depend on the process, the number of parties, and the time involved. We confirm pricing after "
+          "screening, before anything is scheduled.",
+     "draft": "Owner to supply fees: hourly or daily rate, retainers, arbitration filing or administrative costs, "
+              "and how fees are allocated between organizations."},
+    {"q": "Who pays for the process?",
+     "a": "Organizations commonly share the cost, though the parties can agree on a different split, and a "
+          "contract clause may already say who pays.",
+     "draft": "Owner to confirm the practice's standard fee-sharing arrangement and deposit requirements."},
+    {"q": "How long does a business mediation or arbitration take?",
+     "a": "It depends on the complexity of the dispute, the number of parties, and how much documentation is "
+          "involved. We give you an estimate after screening.",
+     "draft": "Owner to supply typical session or hearing length and how many sessions a B2B matter usually "
+              "takes."},
+    {"q": "What happens in the first session?",
+     "a": "We confirm the process the parties have agreed to, set ground rules and confidentiality expectations, "
+          "identify the issues in dispute, and agree on what information is needed to move forward.",
+     "draft": "General description of ADR practice. Owner to confirm it matches how she opens a B2B matter."},
+    {"q": "Is an arbitration award binding?",
+     "a": "That depends on what the parties agreed to. We offer binding, non-binding, and hybrid processes, so "
+          "the agreement or contract clause that brings you to arbitration determines the effect of the outcome.",
+     "draft": "Pending legal review: confirm this wording, since enforceability is a legal question."},
+    {"q": "What is a mediation or arbitration clause in a contract?",
+     "a": "It is a term in a business agreement saying that if a dispute arises, the parties will use mediation or "
+          "arbitration rather than going straight to court. If your contract already has one, bring it to "
+          "screening so we can confirm the process it requires."},
+    {"q": "How is arbitration different from going to court?",
+     "a": "Arbitration is private, generally faster, and scheduled around the parties rather than a court docket, "
+          "and the parties choose their neutral. Court proceedings are public and follow the court's rules and "
+          "calendar.",
+     "draft": "General comparison. Pending legal review so it does not read as legal advice."},
+    {"q": "Can you help with a partnership dispute or a board conflict?",
+     "a": "Yes, for eligible non-consumer-facing organizations. We work with internal workplace disputes, "
+          "leadership and partnership conflicts, board governance issues, and vendor–supplier disputes between "
+          "non-consumer-facing entities."},
 ]
 
 NOT_HANDLED = [
@@ -242,7 +279,7 @@ PAGES = [
                          "General"],
              "link": ("ethics", "Read our ethics commitment")},
             {"type": "faq", "wf": "Pattern: tls/faq-preview (Details blocks)", "tone": "white", "center": True,
-             "eyebrow": "FAQ", "h2": "Common questions", "items": [FAQ[1], FAQ[2], FAQ[4]],
+             "eyebrow": "FAQ", "h2": "Common questions", "items": [FAQ[1], FAQ[12], FAQ[4]],
              "link": ("faq", "See all questions")},
             CROSSLINK,
             CTA,

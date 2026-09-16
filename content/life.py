@@ -87,6 +87,51 @@ FAQ = [
     {"q": "How do I get started?",
      "a": f'Call or text <a href="tel:+12406500007">{PHONE}</a>, email <a href="mailto:{EMAIL}">{EMAIL}</a>, '
           f'or send a brief message through the contact page.'},
+    # Added 2026-09-16: questions people commonly search for. Answers that need the owner's own
+    # numbers or an attorney's wording carry a draft flag instead of invented detail.
+    {"q": "How much does mediation cost?",
+     "a": "Fees depend on the service and the time involved. We confirm pricing with you after screening, before "
+          "any session is scheduled.",
+     "draft": "Owner to supply fees: hourly or flat rate, consultation cost (if any), how fees are split between "
+              "parties, deposits, and payment methods."},
+    {"q": "How long does mediation take?",
+     "a": "It depends on the number of issues and how prepared both people are. We give you an estimate after "
+          "screening.",
+     "draft": "Owner to supply typical session length and how many sessions a family or interpersonal matter "
+              "usually takes."},
+    {"q": "What happens in a first mediation session?",
+     "a": "The mediator explains the process and ground rules, each person describes what matters most to them, "
+          "and together you set an agenda for the issues to work through.",
+     "draft": "General description of mediation practice. Owner to confirm it matches how she runs a first "
+              "session, including session length and whether parties meet together or separately."},
+    {"q": "Do both people have to agree to mediation?",
+     "a": "Yes. All parties must agree to participate, unless an order requires it. If the other person has not "
+          "agreed yet, you can still complete the screening and we will discuss next steps."},
+    {"q": "Do I still need a lawyer if we mediate?",
+     "a": "We provide mediation only and do not give legal advice or representation, so many people choose to get "
+          "independent legal advice about their options and to review anything they sign. Whether you need a "
+          "lawyer is your decision.",
+     "draft": "Pending legal review: confirm this wording stays clear of giving legal advice."},
+    {"q": "Is a mediated agreement legally binding?",
+     "a": "Mediation helps you and the other person reach terms you both accept. Whether those terms become "
+          "legally enforceable depends on how they are written, signed, and, in some matters, submitted to a "
+          "court. Because we do not provide legal advice, you may wish to have your own attorney review any "
+          "agreement.",
+     "draft": "Pending legal review: confirm this wording and what the practice does or does not draft."},
+    {"q": "What if there has been abuse, violence, or safety concerns?",
+     "a": "Tell us during screening. We ask directly about threats, violence, harassment, and coercive control. "
+          "Depending on the circumstances we may still be able to help, may suggest a different structure, or may "
+          "refer you elsewhere. If you are in immediate danger, call 911.",
+     "draft": "Owner to approve the safety wording, including whether to list a crisis line alongside 911."},
+    {"q": "How does divorce or separation mediation work?",
+     "a": "Instead of arguing positions through others, both people meet with a neutral mediator to talk through "
+          "the decisions a separation requires, such as parenting time, communication, and next steps. You "
+          "control the outcome; the mediator manages the conversation and keeps it balanced.",
+     "draft": "Owner to confirm this describes her family mediation process."},
+    {"q": "What is a parenting plan?",
+     "a": "A parenting plan is a written arrangement covering how co-parents share time, make decisions, handle "
+          "holidays and exchanges, and communicate with each other. Mediation gives both parents a structured "
+          "way to build one together."},
 ]
 
 NOT_HANDLED = [
@@ -225,7 +270,7 @@ PAGES = [
              "link": ("ethics", "Read our ethics commitment")},
             {"type": "faq", "wf": "Pattern: tls/faq-preview (Details blocks)", "tone": "soft", "center": True,
              "eyebrow": "FAQ", "h2": "Common questions",
-             "items": [FAQ[1], FAQ[3], FAQ[8]], "link": ("faq", "See all questions")},
+             "items": [FAQ[1], FAQ[11], FAQ[3]], "link": ("faq", "See all questions")},
             CROSSLINK,
             CTA,
         ],
