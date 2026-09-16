@@ -9,7 +9,7 @@ from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIAL
 from screening import (LIFE_INTRO, LIFE_QUESTIONS, ROLES, STOP_REFERRALS, STOP_TEXT, STOP_TITLE)
 
 # Owner's instruction (2026-09-16): every call to action on this site goes to this address.
-EMAIL = "services@lettlshelp.com"
+EMAIL = "Services@lettlshelp.com"
 
 SISTER_URL = "https://transformativeleadershipsystems.com"
 
@@ -28,7 +28,6 @@ SITE = {
     "gsc": GSC_TOKEN,
     "ga4_id": None,  # e.g. "G-XXXXXXXXXX"; a Measurement ID, not an API key
     "email": EMAIL,
-    "future_email": "Services@TransformativeLifeSolutions.com",
     "footer_blurb": "A private ADR, mediation, and conflict coaching practice offering trauma-informed, "
                     "culturally grounded support for families, individuals, and non-consumer-facing workplaces.",
     "short_disclaimer": "Transformative Life Solutions provides mediation, coaching, and training services only. "

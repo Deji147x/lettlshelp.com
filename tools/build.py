@@ -93,8 +93,15 @@ def img(ctx, name, alt, sizes=IMG_SIZES, eager=False):
             f'width="{big[0]}" height="{big[1]}" alt="{attr(alt)}" {loading}></picture>')
 
 
+def cta(name, ctx, aria=None):
+    """Tracking hooks for every call to action: GA4/GTM read these in app.js."""
+    label = f' aria-label="{attr(aria)}"' if aria else ""
+    return f'data-cta="{attr(name)}" data-cta-page="{attr(ctx.page["slug"] or "home")}"{label}'
+
+
 def button(ctx, pair, cls):
-    return f'<a class="btn {cls}" href="{ctx.href(pair[0])}">{pair[1]}</a>'
+    name = pair[2] if len(pair) > 2 else slugify(pair[1])
+    return f'<a class="btn {cls}" href="{ctx.href(pair[0])}" {cta(name, ctx)}>{pair[1]}</a>'
 
 
 def paras(items):
@@ -154,7 +161,8 @@ def r_hero(ctx, s):
         f'<p class="lede">{s["lede"]}</p>' if s.get("lede") else "",
         '<div class="btn-row">' + button(ctx, s["primary"], "btn-primary")
         + (button(ctx, s["secondary"], "btn-secondary") if s.get("secondary") else "") + "</div>",
-        f'<p class="hero-call">Prefer to talk? Call or text <a href="tel:{C.PHONE_TEL}">{C.PHONE}</a></p>',
+        f'<p class="hero-call">Prefer to talk? Call or text '
+        f'<a href="tel:{C.PHONE_TEL}" {cta("call-hero", ctx)}>{C.PHONE}</a></p>',
     ])
     media = f'<div class="hero-media">{img(ctx, s["image"], s["alt"], eager=True)}</div>'
     return (f'<section class="hero" data-wf="{attr(s.get("wf", ""))}"><div class="container hero-grid">'
@@ -183,7 +191,9 @@ def r_cards(ctx, s):
     for it in s["items"]:
         link = ""
         if it.get("link"):
-            link = f'<a class="card-link" href="{ctx.href(it["link"][0])}">{it["link"][1]} <span aria-hidden="true">→</span></a>'
+            link = (f'<a class="card-link" href="{ctx.href(it["link"][0])}" '
+                    f'{cta("card-" + slugify(it["title"]), ctx)}>{it["link"][1]} '
+                    f'<span aria-hidden="true">→</span></a>')
         card_icon = icon(it["icon"]) if it.get("icon") else ""
         text = f'<p>{it["text"]}</p>' if it.get("text") else ""
         cards.append(f'<li class="card">{card_icon}<h3>{it["title"]}</h3>{text}{link}</li>')
@@ -237,13 +247,16 @@ def r_list(ctx, s):
 
 def r_crosslink(ctx, s):
     return section(s, f'<div class="crosslink"><p>{s["text"]}</p>'
-                      f'<a class="btn btn-secondary" href="{s["href"]}">{s["label"]}</a></div>')
+                      f'<a class="btn btn-secondary" href="{s["href"]}" '
+                      f'{cta("sister-site", ctx)}>{s["label"]}</a></div>')
 
 
 def r_cta(ctx, s):
     hid = ctx.unique_id(s["h2"])
-    contact = (f'<p class="cta-contact"><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a>'
-               f' &nbsp;·&nbsp; <a href="mailto:{ctx.site["email"]}">{ctx.site["email"]}</a></p>')
+    contact = (f'<p class="cta-contact">'
+               f'<a href="tel:{C.PHONE_TEL}" {cta("call-cta", ctx)}>Call or text {C.PHONE}</a>'
+               f' &nbsp;·&nbsp; <a href="mailto:{ctx.site["email"]}" {cta("email-cta", ctx)}>'
+               f'{ctx.site["email"]}</a></p>')
     return section(dict(s, tone=s.get("tone", "deep")),
                    f'<div class="cta-box"><h2 id="{hid}">{s["h2"]}</h2><p>{s["text"]}</p>'
                    f'<div class="btn-row center">{button(ctx, s["primary"], "btn-primary")}</div>{contact}</div>',
@@ -282,13 +295,16 @@ def r_posts(ctx, s):
 
 def r_contact(ctx, s):
     site = ctx.site
+    call_label = f'Call or text {site["name"]}'
+    mail_label = f'Email {site["name"]}'
     items = [
-        ("phone", "Phone or text", f'<a href="tel:{C.PHONE_TEL}">{C.PHONE_INTL}</a>'),
-        ("mail", "Email", f'<a href="mailto:{site["email"]}">{site["email"]}</a><br>'
-                          f'<span class="muted">Future address (not active yet): {site["future_email"]}</span>'),
+        ("phone", "Phone or text",
+         f'<a href="tel:{C.PHONE_TEL}" {cta("call", ctx, call_label)}>{C.PHONE_INTL}</a>'),
+        ("mail", "Email",
+         f'<a href="mailto:{site["email"]}" {cta("email", ctx, mail_label)}>{site["email"]}</a>'),
         ("clipboard", "Begin intake",
          f'Complete the online screening so we can confirm eligibility. '
-         f'<a href="{ctx.href("begin-intake")}">Start the screening</a>.'),
+         f'<a href="{ctx.href("begin-intake")}" {cta("intake-start", ctx)}>Start the screening</a>.'),
     ]
     contact_list = "".join(f'<li class="contact-item">{icon(i)}<div><strong>{t}</strong><p>{body}</p></div></li>'
                            for i, t, body in items)
@@ -516,13 +532,13 @@ def header(ctx):
               'Yellow “Review” notes need owner or legal sign-off.</div>') if WIREFRAME else ""
     return f'''<a class="skip-link" href="#main">Skip to main content</a>
 {banner}
-<div class="utility-bar"><div class="container"><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a><a href="mailto:{site["email"]}">{site["email"]}</a></div></div>
+<div class="utility-bar"><div class="container"><a href="tel:{C.PHONE_TEL}" {cta("call-utility", ctx)}>Call or text {C.PHONE}</a><a href="mailto:{site["email"]}" {cta("email-utility", ctx)}>{site["email"]}</a></div></div>
 <header class="site-header" data-wf="Template part: header (Site logo + Navigation block)">
 <div class="container header-inner">
 <a class="brand" href="{ctx.href("")}"><img src="{ctx.a}logo-mark.png" width="48" height="48" alt=""><span class="brand-text">{site["word_top"]}<small>{site["word_bottom"]}</small></span></a>
 <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
 <nav id="primary-nav" aria-label="Main"><ul>{"".join(items)}</ul></nav>
-<a class="btn btn-primary header-cta" href="{ctx.href(site["cta"][0])}">{site["cta"][1]}</a>
+<a class="btn btn-primary header-cta" href="{ctx.href(site["cta"][0])}" {cta("header-consultation", ctx)}>{site["cta"][1]}</a>
 </div>
 </header>
 '''
@@ -539,7 +555,7 @@ def footer(ctx):
 <div class="container footer-grid">
 <div><img class="footer-logo" src="{ctx.a}logo.png" width="{logo_w}" height="{logo_h}" alt="{attr(site["name"])}"><p>{site["footer_blurb"]}</p></div>
 <nav aria-label="Footer"><h2 class="footer-h">Explore</h2><ul>{nav}</ul></nav>
-<div><h2 class="footer-h">Contact</h2><ul><li><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a></li><li><a href="mailto:{site["email"]}">{site["email"]}</a></li><li class="footer-muted">Virtual &amp; in‑person options</li></ul>
+<div><h2 class="footer-h">Contact</h2><ul><li><a href="tel:{C.PHONE_TEL}" {cta("call-footer", ctx)}>Call or text {C.PHONE}</a></li><li><a href="mailto:{site["email"]}" {cta("email-footer", ctx)}>{site["email"]}</a></li><li class="footer-muted">Virtual &amp; in‑person options</li></ul>
 <h2 class="footer-h">Follow</h2><ul><li><a href="{C.LINKEDIN}" rel="noopener">LinkedIn</a></li><li class="placeholder-link">Facebook (future)</li><li class="placeholder-link">Instagram (future)</li></ul></div>
 <div><h2 class="footer-h">Policies</h2><ul>{policies}</ul>
 <h2 class="footer-h">Sister practice</h2><p><a href="{sister_url}">{sister_name}</a><br><span class="footer-muted">{sister_desc}</span></p></div>

@@ -8,9 +8,8 @@ from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIAL
                     REFERRALS, RULE17, TERMS_OUTLINE)
 from screening import (LEADERSHIP_INTRO, LEADERSHIP_QUESTIONS, ROLES, STOP_REFERRALS, STOP_TEXT, STOP_TITLE)
 
-# Owner's instruction (2026-09-16) for this site. The Life site uses services@lettlshelp.com.
-# CONFIRM: the owner may want one shared address for both sites.
-EMAIL = "support@lettlshelp.com"
+# Owner's instruction (2026-09-16) for this site. The Life site uses Services@lettlshelp.com.
+EMAIL = "Support@lettlshelp.com"
 
 SISTER_URL = "https://transformativelifesolutions.com"
 
@@ -29,7 +28,6 @@ SITE = {
     "gsc": None,  # needs its own Search Console property/token
     "ga4_id": None,
     "email": EMAIL,
-    "future_email": "Services@TransformativeLeadershipSystems.com",
     "footer_blurb": "A private ADR practice providing arbitration, mediation, negotiation support, and conflict "
                     "coaching for non-consumer-facing businesses, nonprofits, and professional entities.",
     "short_disclaimer": "Transformative Leadership Systems provides neutral ADR, conflict-coaching, and organizational "
