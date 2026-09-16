@@ -7,10 +7,14 @@ Written 2026-09-14 when this project moved out of an unrelated session. **Read t
 - **dadstillhere / `dadstillhere.com-landingpage` / the home-folder repo is unrelated.** Don't touch it from this project.
 
 ## Client & brands
-- Owner: **Tanika L. Smith** · LetTLSHelp@gmail.com · +1 (240) 650-0007 · LinkedIn linkedin.com/in/lettlshelp
-- **Transformative Life Solutions** → https://TransformativeLifeSolutions.com: family, parenting, divorce/separation, interpersonal, and workplace (non-consumer-facing only) mediation, plus conflict coaching.
-- **Transformative Leadership Systems** → https://TransformativeLeadershipSystems.com: B2B-only arbitration and med-arb, business mediation, negotiation support (including NDAs), and leadership conflict coaching. The name is **Systems** (the June draft and signature say "Solutions"; that's wrong).
-- Future emails (not active): Services@TransformativeLifeSolutions.com, Services@TransformativeLeadershipSystems.com
+- Owner: **Tanika L. Smith** · +1 (240) 650-0007 · LinkedIn linkedin.com/in/lettlshelp
+- **Both sites launch on lettlshelp.com** (owner's decision, 2026-09-16). Life Solutions at
+  `https://lettlshelp.com/`, Leadership Systems at `https://lettlshelp.com/leadership-systems/`.
+  Canonicals, sitemap, schema, and the shared Search Console token all use those URLs. The vanity
+  domains come later: change `domain`/`base` in `content/{life,leadership}.py` and 301-redirect.
+- **Transformative Life Solutions** (later TransformativeLifeSolutions.com): family, parenting, divorce/separation, interpersonal, and workplace (non-consumer-facing only) mediation, plus conflict coaching. Contact: **Services@lettlshelp.com**.
+- **Transformative Leadership Systems** (later TransformativeLeadershipSystems.com): B2B-only arbitration and med-arb, business mediation, negotiation support (including NDAs), and leadership conflict coaching. Contact: **Support@lettlshelp.com**. The name is **Systems** (the June draft and signature say "Solutions"; that's wrong).
+- The owner's personal Gmail is no longer published on either site.
 
 ## Source materials (in ~/Downloads)
 - **Source of truth:** `TLS_Website Development Guide_ 09132026.pdf` and `TLS2_Website Development Guide_ 09132026.pdf`. The June 29 drafts in `Guides for Website Design/` are superseded.

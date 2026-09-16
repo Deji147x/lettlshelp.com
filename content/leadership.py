@@ -4,14 +4,16 @@ Sources: 'TLS2_Website Development Guide_ 09132026.pdf' (current) and the owner'
 Copy that isn't in those sources carries a `draft` note so it gets owner/legal sign-off.
 """
 from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIALS_SLOT,
-                    ETHICS_DISCLAIMER, FOUNDER_PHOTO_SLOT, LEGAL_REVIEW, PHONE, PRIVACY_OUTLINE,
-                    REFERRALS, RULE17, TERMS_OUTLINE)
+                    ETHICS_DISCLAIMER, FOUNDER_PHOTO_SLOT, GSC_TOKEN, LEGAL_REVIEW, PHONE,
+                    PRIVACY_OUTLINE, REFERRALS, RULE17, TERMS_OUTLINE)
 from screening import (LEADERSHIP_INTRO, LEADERSHIP_QUESTIONS, ROLES, STOP_REFERRALS, STOP_TEXT, STOP_TITLE)
 
 # Owner's instruction (2026-09-16) for this site. The Life site uses Services@lettlshelp.com.
 EMAIL = "Support@lettlshelp.com"
 
-SISTER_URL = "https://transformativelifesolutions.com"
+# Shares lettlshelp.com with Life Solutions for now (owner's decision, 2026-09-16); this site is
+# served under /leadership-systems/. Future home: TransformativeLeadershipSystems.com.
+SISTER_URL = "https://lettlshelp.com/"
 
 SITE = {
     "key": "leadership",
@@ -19,13 +21,14 @@ SITE = {
     "name": "Transformative Leadership Systems",
     "word_top": "Transformative",
     "word_bottom": "Leadership Systems",
-    "domain": "https://transformativeleadershipsystems.com",
+    "domain": "https://lettlshelp.com",
+    "base": "/leadership-systems",
     "css": "leadership.css",
     "fonts": "https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700"
              "&family=Playfair+Display:ital@1&display=swap",
     "theme_color": "#0F2040",
     "og_bg": "#F8F8F8",
-    "gsc": None,  # needs its own Search Console property/token
+    "gsc": GSC_TOKEN,  # same lettlshelp.com property as Life while both share the domain
     "ga4_id": None,
     "email": EMAIL,
     "footer_blurb": "A private ADR practice providing arbitration, mediation, negotiation support, and conflict "

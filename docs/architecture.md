@@ -4,13 +4,20 @@
 
 | | Transformative Life Solutions | Transformative Leadership Systems |
 |---|---|---|
-| Domain | https://transformativelifesolutions.com | https://transformativeleadershipsystems.com |
+| URL (now) | https://lettlshelp.com/ | https://lettlshelp.com/leadership-systems/ |
+| Domain (later) | https://transformativelifesolutions.com | https://transformativeleadershipsystems.com |
 | Focus | Family, interpersonal, workplace (non-consumer) mediation; conflict coaching | B2B arbitration, med-arb, business mediation, negotiation support, coaching |
 | Palette | Teal / navy-teal / gold | Leadership blue / teal-green / ocher |
 | Fonts | Lora + Open Sans | Merriweather + Lato |
-| Future email | Services@TransformativeLifeSolutions.com | Services@TransformativeLeadershipSystems.com |
+| Email | Services@lettlshelp.com | Support@lettlshelp.com |
 
-The two sites are **separate WordPress installs** on one hosting plan that allows multiple sites. Each has its own logo, palette, content, images, navigation, SEO, and contact details. They don't share a database, so either one can move, grow, or add e-commerce without affecting the other.
+**While both sites share lettlshelp.com**, run them as **one WordPress install**: Life Solutions
+pages at the root and Leadership Systems pages under `/leadership-systems/`, with the two child
+themes applied per section (or one theme switching palette by path). That keeps hosting to a single
+site and one SSL certificate. When the vanity domains are ready, split Leadership Systems into its
+own install and 301-redirect `/leadership-systems/*` to the new domain.
+
+Once separated, the two sites are **separate WordPress installs** on one hosting plan that allows multiple sites. Each has its own logo, palette, content, images, navigation, SEO, and contact details. They don't share a database, so either one can move, grow, or add e-commerce without affecting the other.
 
 ## URL map (same on both sites)
 

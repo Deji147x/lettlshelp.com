@@ -33,6 +33,11 @@ MODULES = [life, leadership]
 IMG_SIZES = "(min-width: 860px) 560px, 100vw"
 
 
+def site_url(site, slug=""):
+    """Live URL for a page. Both practices share lettlshelp.com, so each site has a base path."""
+    return f'{site["domain"]}{site.get("base", "")}/{slug + "/" if slug else ""}'
+
+
 def attr(value):
     return escape(str(value), quote=True)
 
@@ -62,7 +67,7 @@ class Ctx:
 
     def url(self, slug=None):
         slug = self.page["slug"] if slug is None else slug
-        return f'{self.site["domain"]}/{slug + "/" if slug else ""}'
+        return site_url(self.site, slug)
 
     def unique_id(self, text):
         base = slugify(text) or "section"
@@ -421,7 +426,7 @@ RENDER = {
 
 def schema(ctx):
     site, page = ctx.site, ctx.page
-    base = site["domain"] + "/"
+    base = site_url(site)
     org_id = base + "#organization"
     webpage = {
         "@type": page.get("schema_type", "WebPage"), "@id": ctx.url() + "#webpage", "url": ctx.url(),
@@ -464,7 +469,7 @@ def schema(ctx):
 def head(ctx):
     site, page = ctx.site, ctx.page
     title, desc, url = page["title"], page["description"], ctx.url()
-    og_image = site["domain"] + "/assets/og-image.jpg"
+    og_image = site_url(site) + "assets/og-image.jpg"
     gsc = (f'<meta name="google-site-verification" content="{site["gsc"]}">' if site.get("gsc")
            else "<!-- Search Console: add this domain's verification meta tag or DNS TXT record -->")
     if site.get("ga4_id"):
@@ -574,12 +579,12 @@ def render_page(site, page):
     body = "".join(RENDER[s["type"]](ctx, s) for s in page["sections"])
     html = head(ctx) + header(ctx) + f'<main id="main" tabindex="-1">{body}</main>\n' + footer(ctx)
     if WIREFRAME:
-        # Preview only: sister-site links point at the local wireframe until the real domains are live,
-        # so there are no broken links. Canonical, Open Graph, and schema URLs keep the production domains.
+        # Preview only: sister-site links point at the local wireframe folders, so nothing 404s before
+        # launch. Canonical, Open Graph, sitemap, and schema URLs keep the real lettlshelp.com paths.
         for other in MODULES:
             if other.SITE is not site:
-                host = re.escape(other.SITE["domain"])
-                html = re.sub(rf'(<a\s[^>]*?href="){host}/?"', rf'\g<1>{ctx.up}../{other.SITE["slug"]}/"', html)
+                target = re.escape(site_url(other.SITE))
+                html = re.sub(rf'(<a\s[^>]*?href="){target}"', rf'\g<1>{ctx.up}../{other.SITE["slug"]}/"', html)
     dest = OUT / site["slug"] / page["slug"] / "index.html" if page["slug"] else OUT / site["slug"] / "index.html"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(html, encoding="utf-8")
@@ -593,17 +598,28 @@ def site_files(site, pages):
     shutil.copy2(DESIGN / "base.css", root / "assets" / "css" / "base.css")
     shutil.copy2(DESIGN / site["css"], root / "assets" / "css" / site["css"])
     shutil.copy2(DESIGN / "app.js", root / "assets" / "js" / "app.js")
+    manifest = {"name": site["name"], "short_name": site["word_bottom"],
+                "start_url": site.get("base", "") + "/", "display": "browser",
+                "background_color": "#FFFFFF", "theme_color": site["theme_color"],
+                "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"},
+                          {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png"}]}
+    (root / "site.webmanifest").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+
+def shared_files(modules):
+    """One sitemap, robots.txt, and .htaccess: both practices share lettlshelp.com."""
+    domain = modules[0].SITE["domain"]
+    host = domain.split("//", 1)[1]
     today = date.today().isoformat()
-    urls = "".join(f'  <url><loc>{site["domain"]}/{p["slug"] + "/" if p["slug"] else ""}</loc>'
-                   f'<lastmod>{today}</lastmod></url>\n' for p in pages)
-    (root / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
-                                      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-                                      f'{urls}</urlset>\n', encoding="utf-8")
-    (root / "robots.txt").write_text("# Production robots.txt (WordPress/SEO plugin generates the live one)\n"
-                                     f"User-agent: *\nAllow: /\n\nSitemap: {site['domain']}/sitemap.xml\n",
-                                     encoding="utf-8")
-    host = site["domain"].split("//", 1)[1]
-    (root / ".htaccess").write_text(f"""# Production .htaccess for {host} (Apache / LiteSpeed, e.g. Hostinger).
+    urls = "".join(f'  <url><loc>{site_url(m.SITE, p["slug"])}</loc><lastmod>{today}</lastmod></url>\n'
+                   for m in modules for p in m.PAGES)
+    (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
+                                     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                                     f'{urls}</urlset>\n', encoding="utf-8")
+    (OUT / "robots.txt").write_text("# Production robots.txt (WordPress/SEO plugin generates the live one)\n"
+                                    f"User-agent: *\nAllow: /\n\nSitemap: {domain}/sitemap.xml\n",
+                                    encoding="utf-8")
+    (OUT / ".htaccess").write_text(f"""# Production .htaccess for {host} (Apache / LiteSpeed, e.g. Hostinger).
 # Place these rules ABOVE the "# BEGIN WordPress" block; leave the WordPress block unchanged.
 
 <IfModule mod_rewrite.c>
@@ -641,12 +657,10 @@ ExpiresByType text/css "access plus 1 month"
 ExpiresByType application/javascript "access plus 1 month"
 ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
+
+# When TransformativeLifeSolutions.com / TransformativeLeadershipSystems.com go live, 301-redirect
+# these paths to the new domains and update "domain"/"base" in content/{{life,leadership}}.py.
 """, encoding="utf-8")
-    manifest = {"name": site["name"], "short_name": site["word_bottom"], "start_url": "/", "display": "browser",
-                "background_color": "#FFFFFF", "theme_color": site["theme_color"],
-                "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"},
-                          {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png"}]}
-    (root / "site.webmanifest").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
 def hub(sites):
@@ -655,7 +669,7 @@ def hub(sites):
         s = module.SITE
         links = "".join(f'<li><a href="{s["slug"]}/{p["slug"] + "/" if p["slug"] else ""}">{p["label"]}</a></li>'
                         for p in module.PAGES)
-        blocks.append(f'<section><h2>{s["name"]}</h2><p><code>{s["domain"]}</code></p><ul>{links}</ul></section>')
+        blocks.append(f'<section><h2>{s["name"]}</h2><p><code>{site_url(s)}</code></p><ul>{links}</ul></section>')
     html = f'''<!doctype html>
 <html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TLS Wireframes</title>
@@ -675,6 +689,7 @@ def main():
         site_files(module.SITE, module.PAGES)
         for page in module.PAGES:
             print("wrote", render_page(module.SITE, page).relative_to(ROOT))
+    shared_files(sites)
     hub(sites)
 
 
