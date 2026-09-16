@@ -3,9 +3,13 @@
 Sources: 'TLS_Website Development Guide_ 09132026.pdf' (current) and the owner's brief.
 Copy that isn't in those sources carries a `draft` note so it gets owner/legal sign-off.
 """
-from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIALS_SLOT, EMAIL,
-                    ETHICS_DISCLAIMER, FOUNDER_PHOTO_SLOT, GSC_TOKEN, INTAKE_SLOT, LEGAL_REVIEW, PHONE,
+from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIALS_SLOT,
+                    ETHICS_DISCLAIMER, FOUNDER_PHOTO_SLOT, GSC_TOKEN, LEGAL_REVIEW, PHONE,
                     PRIVACY_OUTLINE, REFERRALS, RULE17, TERMS_OUTLINE)
+from screening import (LIFE_INTRO, LIFE_QUESTIONS, ROLES, STOP_REFERRALS, STOP_TEXT, STOP_TITLE)
+
+# Owner's instruction (2026-09-16): every call to action on this site goes to this address.
+EMAIL = "services@lettlshelp.com"
 
 SISTER_URL = "https://transformativeleadershipsystems.com"
 
@@ -23,6 +27,7 @@ SITE = {
     "og_bg": "#F4F7F8",
     "gsc": GSC_TOKEN,
     "ga4_id": None,  # e.g. "G-XXXXXXXXXX"; a Measurement ID, not an API key
+    "email": EMAIL,
     "future_email": "Services@TransformativeLifeSolutions.com",
     "footer_blurb": "A private ADR, mediation, and conflict coaching practice offering trauma-informed, "
                     "culturally grounded support for families, individuals, and non-consumer-facing workplaces.",
@@ -316,8 +321,11 @@ PAGES = [
              "lede": "A clear, supportive process, from your first message to your first session."},
             {"type": "steps", "wf": "Pattern: tls/process-steps", "tone": "white", "h2": "What to expect",
              "items": STEPS, "draft": STEPS_DRAFT},
-            {"type": "slot", "wf": "Block: screening embed (provider-agnostic)", "tone": "soft",
-             "eyebrow": "Coming soon", "h2": "Begin intake online", **INTAKE_SLOT},
+            {"type": "text", "wf": "Pattern: tls/intake-cta", "tone": "soft", "eyebrow": "Step one",
+             "h2": "Begin intake online",
+             "paras": ["Our online screening asks about the services you need, availability, safety, and "
+                       "eligibility. We review every response and reply with next steps or free referrals."],
+             "link": ("begin-intake", "Start the screening")},
             {"type": "list", "wf": "Pattern: tls/referrals", "tone": "white",
              "h2": "If we can't help, we'll point you to support",
              "intro": "If we are unable to facilitate your matter, we will explain why and provide free supportive "
@@ -368,8 +376,8 @@ PAGES = [
     {
         "slug": "contact", "label": "Contact", "schema_type": "ContactPage",
         "title": "Contact a Mediator | Transformative Life Solutions",
-        "description": "Request a consultation with Transformative Life Solutions. Call or text (240) 650-0007 or "
-                       "email LetTLSHelp@gmail.com. Virtual and in-person options.",
+        "description": f"Request a consultation with Transformative Life Solutions. Call or text (240) 650-0007 or "
+                       f"email {EMAIL}. Virtual and in-person options.",
         "sections": [
             {"type": "page_hero", "eyebrow": "Contact", "h1": "Contact Transformative Life Solutions",
              "lede": "Private ADR, Mediation & Conflict Coaching Practice. Serving clients with virtual and "
@@ -377,6 +385,23 @@ PAGES = [
             {"type": "contact", "tone": "white"},
             {"type": "slot", "wf": "Block: booking embed (Google Calendar appointment schedule)", "tone": "soft",
              "eyebrow": "Coming soon", "h2": "Book online", **BOOKING_SLOT},
+        ],
+    },
+    {
+        "slug": "begin-intake", "label": "Begin Intake",
+        "title": "Begin Intake | Transformative Life Solutions",
+        "description": "Complete our online screening: the services you need, availability, safety, court matters, "
+                       "and eligibility. We reply with next steps or free referrals.",
+        "sections": [
+            {"type": "page_hero", "eyebrow": "Screening", "h1": "Begin intake",
+             "lede": "A short, private screening so we can confirm whether we are able to help."},
+            {"type": "intake", "wf": "Pattern: tls/screening-form (14 questions)", "tone": "mist",
+             "h2": "Screening questions",
+             "intro": LIFE_INTRO, "questions": LIFE_QUESTIONS, "roles": ROLES,
+             "stop_title": STOP_TITLE, "stop_text": STOP_TEXT, "stop_referrals": STOP_REFERRALS,
+             "outro": "We look forward to receiving your responses and determining your eligibility.",
+             "draft": "Screening wording supplied by the owner. Before launch, replace the email hand-off with a "
+                      "secure WordPress form (encrypted storage and retention rules) and confirm what is kept."},
         ],
     },
     {

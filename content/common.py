@@ -6,7 +6,8 @@ website guides. Don't add claims, credentials, or statistics the owner hasn't su
 
 FOUNDER = "Tanika L. Smith"
 LINKEDIN = "https://www.linkedin.com/in/lettlshelp/"
-EMAIL = "LetTLSHelp@gmail.com"
+# Each site sets its own contact address (see life.py / leadership.py); the owner's personal
+# Gmail is no longer published on either site.
 PHONE = "(240) 650-0007"
 PHONE_INTL = "+1 (240) 650-0007"
 PHONE_TEL = "+12406500007"
