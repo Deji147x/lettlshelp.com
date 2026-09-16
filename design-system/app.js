@@ -36,3 +36,136 @@
     });
   }
 })();
+
+// Screening + contact forms.
+// Each dropdown answer can reveal guidance and a follow-up box; the answers that make a
+// matter ineligible show the "we cannot assist" notice. Submitting opens the visitor's email
+// app addressed to the site's address — WordPress replaces this with a real form handler.
+(function () {
+  var forms = document.querySelectorAll('.intake-form, .mailto-form');
+  if (!forms.length) return;
+
+  function labelText(el) {
+    var lab = el.id ? document.querySelector('label[for="' + el.id.replace(/"/g, '\\"') + '"]') : null;
+    if (!lab) lab = el.closest('label');
+    return lab ? lab.textContent.replace(/\s+/g, ' ').trim() : el.name;
+  }
+
+  function setUpQuestion(select) {
+    var question = select.closest('.q');
+    var note = question.querySelector('.q-note');
+    var detail = question.querySelector('.q-detail');
+    var box = detail ? detail.querySelector('textarea') : null;
+    var label = detail ? detail.querySelector('label') : null;
+
+    select.addEventListener('change', function () {
+      var opt = select.options[select.selectedIndex];
+      var data = opt ? opt.dataset : {};
+
+      if (note) {
+        note.textContent = data.note || '';
+        note.hidden = !data.note;
+      }
+      if (detail && box && label) {
+        if (data.detail) {
+          label.textContent = data.detail;
+          detail.hidden = false;
+          box.required = data.required === '1';
+        } else {
+          detail.hidden = true;
+          box.required = false;
+          box.value = '';
+        }
+      }
+      question.classList.toggle('is-stop', data.stop === '1');
+      updateStopState(select.form);
+    });
+  }
+
+  function updateStopState(form) {
+    var banner = form.querySelector('.stop-banner');
+    if (!banner) return;
+    banner.hidden = !form.querySelector('.q.is-stop');
+  }
+
+  function collect(form) {
+    var lines = [];
+    var lastGroup = null;
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!el.name || el.type === 'submit' || el.disabled) return;
+      var hiddenWrap = el.closest('.q-detail');
+      if (hiddenWrap && hiddenWrap.hidden) return;
+
+      var group = el.closest('fieldset');
+      var legend = group ? group.querySelector('legend') : null;
+      var groupName = legend ? legend.textContent.replace(/\s+/g, ' ').trim() : null;
+      if (groupName && groupName !== lastGroup) {
+        lines.push('', groupName.toUpperCase());
+        lastGroup = groupName;
+      }
+
+      if (el.type === 'checkbox') {
+        lines.push('Confirmed: ' + (el.checked ? 'Yes' : 'No'));
+        return;
+      }
+      var value = (el.value || '').trim();
+      if (!value || value === 'Select a role') return;
+
+      var question = el.closest('.q');
+      if (question && el.tagName === 'SELECT') {
+        var heading = question.querySelector('h3');
+        lines.push('', question.dataset.q + '. ' + heading.textContent.replace(/\s+/g, ' ').trim(),
+                   'Answer: ' + value);
+      } else if (question) {
+        lines.push(labelText(el) + ': ' + value);
+      } else {
+        lines.push(labelText(el).replace(/\s*\(optional\)$/i, '') + ': ' + value);
+      }
+    });
+    return lines.join('\r\n').replace(/^\s+/, '');
+  }
+
+  function firstInvalid(form) {
+    return Array.prototype.filter.call(form.elements, function (el) {
+      if (!el.name || el.disabled) return false;
+      var wrap = el.closest('.q-detail');
+      if (wrap && wrap.hidden) return false;
+      if (el.type === 'checkbox') return el.required && !el.checked;
+      if (!el.required) return false;
+      if (!el.value.trim()) return true;
+      return el.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value.trim());
+    })[0];
+  }
+
+  Array.prototype.forEach.call(forms, function (form) {
+    Array.prototype.forEach.call(form.querySelectorAll('.q select'), setUpQuestion);
+    var error = form.querySelector('.form-error');
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var bad = firstInvalid(form);
+      if (bad) {
+        if (error) {
+          error.textContent = 'Please complete "' + labelText(bad).replace(/\s*\(optional\)$/i, '') +
+                              '" before sending.';
+          error.hidden = false;
+        }
+        bad.focus();
+        if (bad.scrollIntoView) bad.scrollIntoView({ block: 'center' });
+        return;
+      }
+      if (error) error.hidden = true;
+
+      var body = collect(form);
+      try { if (navigator.clipboard) navigator.clipboard.writeText(body); } catch (e) {}
+
+      // Keep the mailto short enough for email clients; the clipboard copy holds the full text.
+      var trimmed = body.length > 1500
+        ? body.slice(0, 1500) + '\r\n\r\n[Truncated for email. The full response is on your clipboard — paste it here.]'
+        : body;
+      window.location.href = 'mailto:' + form.dataset.email +
+        '?subject=' + encodeURIComponent(form.dataset.subject || 'Website enquiry') +
+        '&body=' + encodeURIComponent(trimmed);
+    });
+  });
+})();

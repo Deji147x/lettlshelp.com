@@ -243,7 +243,7 @@ def r_crosslink(ctx, s):
 def r_cta(ctx, s):
     hid = ctx.unique_id(s["h2"])
     contact = (f'<p class="cta-contact"><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a>'
-               f' &nbsp;·&nbsp; <a href="mailto:{C.EMAIL}">{C.EMAIL}</a></p>')
+               f' &nbsp;·&nbsp; <a href="mailto:{ctx.site["email"]}">{ctx.site["email"]}</a></p>')
     return section(dict(s, tone=s.get("tone", "deep")),
                    f'<div class="cta-box"><h2 id="{hid}">{s["h2"]}</h2><p>{s["text"]}</p>'
                    f'<div class="btn-row center">{button(ctx, s["primary"], "btn-primary")}</div>{contact}</div>',
@@ -284,14 +284,16 @@ def r_contact(ctx, s):
     site = ctx.site
     items = [
         ("phone", "Phone or text", f'<a href="tel:{C.PHONE_TEL}">{C.PHONE_INTL}</a>'),
-        ("mail", "Email", f'<a href="mailto:{C.EMAIL}">{C.EMAIL}</a><br>'
+        ("mail", "Email", f'<a href="mailto:{site["email"]}">{site["email"]}</a><br>'
                           f'<span class="muted">Future address (not active yet): {site["future_email"]}</span>'),
-        ("clipboard", "Begin intake", "A short, private screening form is coming soon."),
+        ("clipboard", "Begin intake",
+         f'Complete the online screening so we can confirm eligibility. '
+         f'<a href="{ctx.href("begin-intake")}">Start the screening</a>.'),
     ]
     contact_list = "".join(f'<li class="contact-item">{icon(i)}<div><strong>{t}</strong><p>{body}</p></div></li>'
                            for i, t, body in items)
     topics = "".join(f"<option>{t}</option>" for t in site["topics"])
-    form = f'''<form class="wf-form" action="#" method="post" aria-labelledby="form-title" data-wf="Form block: provider-agnostic form plugin">
+    form = f'''<form class="wf-form mailto-form" data-email="{attr(site["email"])}" data-subject="Website enquiry — {attr(site["name"])}" novalidate aria-labelledby="form-title" data-wf="Form block: provider-agnostic form plugin">
 <h2 id="form-title">Send a message</h2>
 <p class="field-hint" id="form-privacy">Please share only a brief, general description. Don't include confidential details; we'll follow up to talk privately.</p>
 <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" autocomplete="name" required></div>
@@ -301,8 +303,9 @@ def r_contact(ctx, s):
 <div class="field"><label for="f-topic">What can we help with?</label><select id="f-topic" name="topic">{topics}</select></div>
 <div class="field"><label for="f-msg">Brief description</label><textarea id="f-msg" name="message" aria-describedby="form-privacy"></textarea></div>
 <label class="check"><input type="checkbox" name="ack" required> <span>I understand this form is not for emergencies and that {site["name"]} does not provide legal advice or counseling.</span></label>
-<button class="btn btn-primary" type="submit" disabled>Send message</button>
-<p class="field-hint">Wireframe only. Submission is connected in WordPress.</p>
+<button class="btn btn-primary" type="submit">Send message</button>
+<p class="field-hint">Goes to <a href="mailto:{attr(site["email"])}">{site["email"]}</a>. In this wireframe, Send opens your email app with the message filled in; in WordPress the form posts securely and emails the same address.</p>
+<p class="form-error" role="alert" hidden></p>
 </form>'''
     note = draft_flag("Suggested safety line for a trauma-informed site; owner to approve: "
                       "“If you are in immediate danger, call 911.”")
@@ -312,11 +315,89 @@ def r_contact(ctx, s):
                    hid=hid)
 
 
+def party_block(n, roles, required=False):
+    """One party's contact details. Party 1 is required; the rest are optional."""
+    req = " required" if required else ""
+    opt = "" if required else ' <span class="optional">(optional)</span>'
+    role_opts = "".join(f"<option>{escape(r)}</option>" for r in roles)
+    return f'''<fieldset class="party"><legend>Party {n}{opt}</legend>
+<div class="party-grid">
+<div class="field"><label for="p{n}-name">Full name</label><input id="p{n}-name" name="party{n}_name"{req}></div>
+<div class="field"><label for="p{n}-role">Role</label><select id="p{n}-role" name="party{n}_role">{role_opts}</select></div>
+<div class="field"><label for="p{n}-email">Email</label><input id="p{n}-email" name="party{n}_email" type="email"{req}></div>
+<div class="field"><label for="p{n}-phone">Phone</label><input id="p{n}-phone" name="party{n}_phone" type="tel"></div>
+<div class="field span-2"><label for="p{n}-address">Mailing address</label><input id="p{n}-address" name="party{n}_address"></div>
+</div></fieldset>'''
+
+
+def intake_question(q, n, roles):
+    qid = f"q{n}"
+    head = (f'<div class="q-head"><span class="q-num" aria-hidden="true">{n}</span>'
+            f'<h3 id="{qid}-label">{q["q"]}</h3></div>')
+    notes = (f'<ul class="q-notes">{"".join(f"<li>{x}</li>" for x in q["notes"])}</ul>') if q.get("notes") else ""
+    hint = f'<p class="q-help">{q["help"]}</p>' if q.get("help") else ""
+    if q.get("type") == "parties":
+        parties = party_block(1, roles, required=True) + party_block(2, roles)
+        extra = ('<div class="field"><label for="q-parties-more">Additional parties '
+                 '<span class="optional">(optional)</span></label>'
+                 '<textarea id="q-parties-more" name="parties_additional" '
+                 'placeholder="Name, email, phone, mailing address, and role for each additional party"></textarea></div>')
+        return f'<li class="q" data-q="{n}">{head}{hint}{notes}{parties}{extra}</li>'
+    options = ['<option value="" selected disabled>Select an answer</option>']
+    for o in q["options"]:
+        data = ""
+        if o.get("note"):
+            data += f' data-note="{attr(o["note"])}"'
+        if o.get("detail"):
+            data += f' data-detail="{attr(o["detail"])}"'
+        if o.get("required"):
+            data += ' data-required="1"'
+        if o.get("stop"):
+            data += ' data-stop="1"'
+        options.append(f'<option value="{attr(o["label"])}"{data}>{escape(o["label"])}</option>')
+    select = (f'<div class="field"><label for="{qid}">Your answer</label>'
+              f'<select id="{qid}" name="{qid}" required aria-describedby="{qid}-note">{"".join(options)}</select></div>')
+    note = f'<p class="q-note" id="{qid}-note" role="status" hidden></p>'
+    detail = (f'<div class="field q-detail" hidden><label for="{qid}-detail"></label>'
+              f'<textarea id="{qid}-detail" name="{qid}_detail"></textarea></div>')
+    return f'<li class="q" data-q="{n}">{head}{notes}{hint}{select}{note}{detail}</li>'
+
+
+def r_intake(ctx, s):
+    """Screening questionnaire. Dropdown answers reveal follow-up boxes; ineligible answers stop it."""
+    site = ctx.site
+    head, hid = heading(ctx, s)
+    questions = "".join(intake_question(q, i, s["roles"]) for i, q in enumerate(s["questions"], start=1))
+    referrals = "".join(f"<li>{r}</li>" for r in s["stop_referrals"])
+    stop = (f'<div class="stop-banner" role="status" hidden><h3>{s["stop_title"]}</h3><p>{s["stop_text"]}</p>'
+            f'<ul class="softlist">{referrals}</ul></div>')
+    your_details = f'''<fieldset class="party"><legend>Your details</legend>
+<div class="party-grid">
+<div class="field"><label for="you-name">Full name</label><input id="you-name" name="your_name" autocomplete="name" required></div>
+<div class="field"><label for="you-email">Email</label><input id="you-email" name="your_email" type="email" autocomplete="email" required></div>
+<div class="field"><label for="you-phone">Phone</label><input id="you-phone" name="your_phone" type="tel" autocomplete="tel"></div>
+<div class="field"><label for="you-contact">Preferred way to reach you</label><select id="you-contact" name="your_contact"><option>Email</option><option>Phone call</option><option>Text message</option></select></div>
+</div></fieldset>'''
+    form = f'''<form class="intake-form" data-email="{attr(site["email"])}" data-subject="Screening request — {attr(site["name"])}" novalidate data-wf="Form block: multi-step screening (provider-agnostic)">
+{your_details}
+<ol class="q-list">{questions}</ol>
+{stop}
+<div class="intake-actions">
+<label class="check"><input type="checkbox" name="ack" required> <span>My answers are accurate to the best of my knowledge, and I understand that {site["name"]} screens every matter before offering services.</span></label>
+<button class="btn btn-primary" type="submit">Submit screening</button>
+<p class="field-hint">Responses go to <a href="mailto:{attr(site["email"])}">{site["email"]}</a>. In this wireframe, Submit opens your email app with the answers filled in; in WordPress the form posts securely and emails the same address.</p>
+<p class="form-error" role="alert" hidden></p>
+</div>
+</form>'''
+    outro = f'<p class="intake-outro">{s["outro"]}</p>' if s.get("outro") else ""
+    return section(s, f'<div class="intake">{head}{paras(s.get("intro"))}{form}{outro}</div>', hid=hid)
+
+
 RENDER = {
     "hero": r_hero, "page_hero": r_page_hero, "text": r_text, "cards": r_cards, "split": r_split,
     "steps": r_steps, "notlist": r_notlist, "faq": r_faq, "list": r_list, "crosslink": r_crosslink,
     "cta": r_cta, "slot": r_slot, "disclaimers": r_disclaimers, "legal": r_legal, "posts": r_posts,
-    "contact": r_contact,
+    "contact": r_contact, "intake": r_intake,
 }
 
 
@@ -339,11 +420,11 @@ def schema(ctx):
     graph = [
         {"@type": "ProfessionalService", "@id": org_id, "name": site["name"], "url": base,
          "logo": base + "assets/logo.png", "image": base + "assets/og-image.jpg",
-         "description": site["footer_blurb"], "telephone": C.PHONE_SCHEMA, "email": C.EMAIL,
+         "description": site["footer_blurb"], "telephone": C.PHONE_SCHEMA, "email": site["email"],
          "founder": {"@id": base + "#founder"},
          "knowsAbout": site["keywords"],
          "contactPoint": {"@type": "ContactPoint", "contactType": "customer service", "telephone": C.PHONE_SCHEMA,
-                          "email": C.EMAIL, "availableLanguage": "English"}},
+                          "email": site["email"], "availableLanguage": "English"}},
         {"@type": "WebSite", "@id": base + "#website", "url": base, "name": site["name"], "inLanguage": "en-US",
          "publisher": {"@id": org_id}},
         webpage,
@@ -435,7 +516,7 @@ def header(ctx):
               'Yellow “Review” notes need owner or legal sign-off.</div>') if WIREFRAME else ""
     return f'''<a class="skip-link" href="#main">Skip to main content</a>
 {banner}
-<div class="utility-bar"><div class="container"><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a><a href="mailto:{C.EMAIL}">{C.EMAIL}</a></div></div>
+<div class="utility-bar"><div class="container"><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a><a href="mailto:{site["email"]}">{site["email"]}</a></div></div>
 <header class="site-header" data-wf="Template part: header (Site logo + Navigation block)">
 <div class="container header-inner">
 <a class="brand" href="{ctx.href("")}"><img src="{ctx.a}logo-mark.png" width="48" height="48" alt=""><span class="brand-text">{site["word_top"]}<small>{site["word_bottom"]}</small></span></a>
@@ -458,7 +539,7 @@ def footer(ctx):
 <div class="container footer-grid">
 <div><img class="footer-logo" src="{ctx.a}logo.png" width="{logo_w}" height="{logo_h}" alt="{attr(site["name"])}"><p>{site["footer_blurb"]}</p></div>
 <nav aria-label="Footer"><h2 class="footer-h">Explore</h2><ul>{nav}</ul></nav>
-<div><h2 class="footer-h">Contact</h2><ul><li><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a></li><li><a href="mailto:{C.EMAIL}">{C.EMAIL}</a></li><li class="footer-muted">Virtual &amp; in‑person options</li></ul>
+<div><h2 class="footer-h">Contact</h2><ul><li><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a></li><li><a href="mailto:{site["email"]}">{site["email"]}</a></li><li class="footer-muted">Virtual &amp; in‑person options</li></ul>
 <h2 class="footer-h">Follow</h2><ul><li><a href="{C.LINKEDIN}" rel="noopener">LinkedIn</a></li><li class="placeholder-link">Facebook (future)</li><li class="placeholder-link">Instagram (future)</li></ul></div>
 <div><h2 class="footer-h">Policies</h2><ul>{policies}</ul>
 <h2 class="footer-h">Sister practice</h2><p><a href="{sister_url}">{sister_name}</a><br><span class="footer-muted">{sister_desc}</span></p></div>
