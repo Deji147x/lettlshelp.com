@@ -33,6 +33,11 @@ MODULES = [life, leadership]
 IMG_SIZES = "(min-width: 860px) 560px, 100vw"
 
 
+def site_url(site, slug=""):
+    """Live URL for a page. Both practices share lettlshelp.com, so each site has a base path."""
+    return f'{site["domain"]}{site.get("base", "")}/{slug + "/" if slug else ""}'
+
+
 def attr(value):
     return escape(str(value), quote=True)
 
@@ -62,7 +67,7 @@ class Ctx:
 
     def url(self, slug=None):
         slug = self.page["slug"] if slug is None else slug
-        return f'{self.site["domain"]}/{slug + "/" if slug else ""}'
+        return site_url(self.site, slug)
 
     def unique_id(self, text):
         base = slugify(text) or "section"
@@ -93,8 +98,15 @@ def img(ctx, name, alt, sizes=IMG_SIZES, eager=False):
             f'width="{big[0]}" height="{big[1]}" alt="{attr(alt)}" {loading}></picture>')
 
 
+def cta(name, ctx, aria=None):
+    """Tracking hooks for every call to action: GA4/GTM read these in app.js."""
+    label = f' aria-label="{attr(aria)}"' if aria else ""
+    return f'data-cta="{attr(name)}" data-cta-page="{attr(ctx.page["slug"] or "home")}"{label}'
+
+
 def button(ctx, pair, cls):
-    return f'<a class="btn {cls}" href="{ctx.href(pair[0])}">{pair[1]}</a>'
+    name = pair[2] if len(pair) > 2 else slugify(pair[1])
+    return f'<a class="btn {cls}" href="{ctx.href(pair[0])}" {cta(name, ctx)}>{pair[1]}</a>'
 
 
 def paras(items):
@@ -154,7 +166,8 @@ def r_hero(ctx, s):
         f'<p class="lede">{s["lede"]}</p>' if s.get("lede") else "",
         '<div class="btn-row">' + button(ctx, s["primary"], "btn-primary")
         + (button(ctx, s["secondary"], "btn-secondary") if s.get("secondary") else "") + "</div>",
-        f'<p class="hero-call">Prefer to talk? Call or text <a href="tel:{C.PHONE_TEL}">{C.PHONE}</a></p>',
+        f'<p class="hero-call">Prefer to talk? Call or text '
+        f'<a href="tel:{C.PHONE_TEL}" {cta("call-hero", ctx)}>{C.PHONE}</a></p>',
     ])
     media = f'<div class="hero-media">{img(ctx, s["image"], s["alt"], eager=True)}</div>'
     return (f'<section class="hero" data-wf="{attr(s.get("wf", ""))}"><div class="container hero-grid">'
@@ -183,7 +196,9 @@ def r_cards(ctx, s):
     for it in s["items"]:
         link = ""
         if it.get("link"):
-            link = f'<a class="card-link" href="{ctx.href(it["link"][0])}">{it["link"][1]} <span aria-hidden="true">→</span></a>'
+            link = (f'<a class="card-link" href="{ctx.href(it["link"][0])}" '
+                    f'{cta("card-" + slugify(it["title"]), ctx)}>{it["link"][1]} '
+                    f'<span aria-hidden="true">→</span></a>')
         card_icon = icon(it["icon"]) if it.get("icon") else ""
         text = f'<p>{it["text"]}</p>' if it.get("text") else ""
         cards.append(f'<li class="card">{card_icon}<h3>{it["title"]}</h3>{text}{link}</li>')
@@ -237,13 +252,16 @@ def r_list(ctx, s):
 
 def r_crosslink(ctx, s):
     return section(s, f'<div class="crosslink"><p>{s["text"]}</p>'
-                      f'<a class="btn btn-secondary" href="{s["href"]}">{s["label"]}</a></div>')
+                      f'<a class="btn btn-secondary" href="{s["href"]}" '
+                      f'{cta("sister-site", ctx)}>{s["label"]}</a></div>')
 
 
 def r_cta(ctx, s):
     hid = ctx.unique_id(s["h2"])
-    contact = (f'<p class="cta-contact"><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a>'
-               f' &nbsp;·&nbsp; <a href="mailto:{ctx.site["email"]}">{ctx.site["email"]}</a></p>')
+    contact = (f'<p class="cta-contact">'
+               f'<a href="tel:{C.PHONE_TEL}" {cta("call-cta", ctx)}>Call or text {C.PHONE}</a>'
+               f' &nbsp;·&nbsp; <a href="mailto:{ctx.site["email"]}" {cta("email-cta", ctx)}>'
+               f'{ctx.site["email"]}</a></p>')
     return section(dict(s, tone=s.get("tone", "deep")),
                    f'<div class="cta-box"><h2 id="{hid}">{s["h2"]}</h2><p>{s["text"]}</p>'
                    f'<div class="btn-row center">{button(ctx, s["primary"], "btn-primary")}</div>{contact}</div>',
@@ -282,13 +300,16 @@ def r_posts(ctx, s):
 
 def r_contact(ctx, s):
     site = ctx.site
+    call_label = f'Call or text {site["name"]}'
+    mail_label = f'Email {site["name"]}'
     items = [
-        ("phone", "Phone or text", f'<a href="tel:{C.PHONE_TEL}">{C.PHONE_INTL}</a>'),
-        ("mail", "Email", f'<a href="mailto:{site["email"]}">{site["email"]}</a><br>'
-                          f'<span class="muted">Future address (not active yet): {site["future_email"]}</span>'),
+        ("phone", "Phone or text",
+         f'<a href="tel:{C.PHONE_TEL}" {cta("call", ctx, call_label)}>{C.PHONE_INTL}</a>'),
+        ("mail", "Email",
+         f'<a href="mailto:{site["email"]}" {cta("email", ctx, mail_label)}>{site["email"]}</a>'),
         ("clipboard", "Begin intake",
          f'Complete the online screening so we can confirm eligibility. '
-         f'<a href="{ctx.href("begin-intake")}">Start the screening</a>.'),
+         f'<a href="{ctx.href("begin-intake")}" {cta("intake-start", ctx)}>Start the screening</a>.'),
     ]
     contact_list = "".join(f'<li class="contact-item">{icon(i)}<div><strong>{t}</strong><p>{body}</p></div></li>'
                            for i, t, body in items)
@@ -405,7 +426,7 @@ RENDER = {
 
 def schema(ctx):
     site, page = ctx.site, ctx.page
-    base = site["domain"] + "/"
+    base = site_url(site)
     org_id = base + "#organization"
     webpage = {
         "@type": page.get("schema_type", "WebPage"), "@id": ctx.url() + "#webpage", "url": ctx.url(),
@@ -448,7 +469,7 @@ def schema(ctx):
 def head(ctx):
     site, page = ctx.site, ctx.page
     title, desc, url = page["title"], page["description"], ctx.url()
-    og_image = site["domain"] + "/assets/og-image.jpg"
+    og_image = site_url(site) + "assets/og-image.jpg"
     gsc = (f'<meta name="google-site-verification" content="{site["gsc"]}">' if site.get("gsc")
            else "<!-- Search Console: add this domain's verification meta tag or DNS TXT record -->")
     if site.get("ga4_id"):
@@ -516,13 +537,13 @@ def header(ctx):
               'Yellow “Review” notes need owner or legal sign-off.</div>') if WIREFRAME else ""
     return f'''<a class="skip-link" href="#main">Skip to main content</a>
 {banner}
-<div class="utility-bar"><div class="container"><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a><a href="mailto:{site["email"]}">{site["email"]}</a></div></div>
+<div class="utility-bar"><div class="container"><a href="tel:{C.PHONE_TEL}" {cta("call-utility", ctx)}>Call or text {C.PHONE}</a><a href="mailto:{site["email"]}" {cta("email-utility", ctx)}>{site["email"]}</a></div></div>
 <header class="site-header" data-wf="Template part: header (Site logo + Navigation block)">
 <div class="container header-inner">
 <a class="brand" href="{ctx.href("")}"><img src="{ctx.a}logo-mark.png" width="48" height="48" alt=""><span class="brand-text">{site["word_top"]}<small>{site["word_bottom"]}</small></span></a>
 <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
 <nav id="primary-nav" aria-label="Main"><ul>{"".join(items)}</ul></nav>
-<a class="btn btn-primary header-cta" href="{ctx.href(site["cta"][0])}">{site["cta"][1]}</a>
+<a class="btn btn-primary header-cta" href="{ctx.href(site["cta"][0])}" {cta("header-consultation", ctx)}>{site["cta"][1]}</a>
 </div>
 </header>
 '''
@@ -539,7 +560,7 @@ def footer(ctx):
 <div class="container footer-grid">
 <div><img class="footer-logo" src="{ctx.a}logo.png" width="{logo_w}" height="{logo_h}" alt="{attr(site["name"])}"><p>{site["footer_blurb"]}</p></div>
 <nav aria-label="Footer"><h2 class="footer-h">Explore</h2><ul>{nav}</ul></nav>
-<div><h2 class="footer-h">Contact</h2><ul><li><a href="tel:{C.PHONE_TEL}">Call or text {C.PHONE}</a></li><li><a href="mailto:{site["email"]}">{site["email"]}</a></li><li class="footer-muted">Virtual &amp; in‑person options</li></ul>
+<div><h2 class="footer-h">Contact</h2><ul><li><a href="tel:{C.PHONE_TEL}" {cta("call-footer", ctx)}>Call or text {C.PHONE}</a></li><li><a href="mailto:{site["email"]}" {cta("email-footer", ctx)}>{site["email"]}</a></li><li class="footer-muted">Virtual &amp; in‑person options</li></ul>
 <h2 class="footer-h">Follow</h2><ul><li><a href="{C.LINKEDIN}" rel="noopener">LinkedIn</a></li><li class="placeholder-link">Facebook (future)</li><li class="placeholder-link">Instagram (future)</li></ul></div>
 <div><h2 class="footer-h">Policies</h2><ul>{policies}</ul>
 <h2 class="footer-h">Sister practice</h2><p><a href="{sister_url}">{sister_name}</a><br><span class="footer-muted">{sister_desc}</span></p></div>
@@ -558,12 +579,12 @@ def render_page(site, page):
     body = "".join(RENDER[s["type"]](ctx, s) for s in page["sections"])
     html = head(ctx) + header(ctx) + f'<main id="main" tabindex="-1">{body}</main>\n' + footer(ctx)
     if WIREFRAME:
-        # Preview only: sister-site links point at the local wireframe until the real domains are live,
-        # so there are no broken links. Canonical, Open Graph, and schema URLs keep the production domains.
+        # Preview only: sister-site links point at the local wireframe folders, so nothing 404s before
+        # launch. Canonical, Open Graph, sitemap, and schema URLs keep the real lettlshelp.com paths.
         for other in MODULES:
             if other.SITE is not site:
-                host = re.escape(other.SITE["domain"])
-                html = re.sub(rf'(<a\s[^>]*?href="){host}/?"', rf'\g<1>{ctx.up}../{other.SITE["slug"]}/"', html)
+                target = re.escape(site_url(other.SITE))
+                html = re.sub(rf'(<a\s[^>]*?href="){target}"', rf'\g<1>{ctx.up}../{other.SITE["slug"]}/"', html)
     dest = OUT / site["slug"] / page["slug"] / "index.html" if page["slug"] else OUT / site["slug"] / "index.html"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(html, encoding="utf-8")
@@ -577,17 +598,28 @@ def site_files(site, pages):
     shutil.copy2(DESIGN / "base.css", root / "assets" / "css" / "base.css")
     shutil.copy2(DESIGN / site["css"], root / "assets" / "css" / site["css"])
     shutil.copy2(DESIGN / "app.js", root / "assets" / "js" / "app.js")
+    manifest = {"name": site["name"], "short_name": site["word_bottom"],
+                "start_url": site.get("base", "") + "/", "display": "browser",
+                "background_color": "#FFFFFF", "theme_color": site["theme_color"],
+                "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"},
+                          {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png"}]}
+    (root / "site.webmanifest").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+
+def shared_files(modules):
+    """One sitemap, robots.txt, and .htaccess: both practices share lettlshelp.com."""
+    domain = modules[0].SITE["domain"]
+    host = domain.split("//", 1)[1]
     today = date.today().isoformat()
-    urls = "".join(f'  <url><loc>{site["domain"]}/{p["slug"] + "/" if p["slug"] else ""}</loc>'
-                   f'<lastmod>{today}</lastmod></url>\n' for p in pages)
-    (root / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
-                                      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-                                      f'{urls}</urlset>\n', encoding="utf-8")
-    (root / "robots.txt").write_text("# Production robots.txt (WordPress/SEO plugin generates the live one)\n"
-                                     f"User-agent: *\nAllow: /\n\nSitemap: {site['domain']}/sitemap.xml\n",
-                                     encoding="utf-8")
-    host = site["domain"].split("//", 1)[1]
-    (root / ".htaccess").write_text(f"""# Production .htaccess for {host} (Apache / LiteSpeed, e.g. Hostinger).
+    urls = "".join(f'  <url><loc>{site_url(m.SITE, p["slug"])}</loc><lastmod>{today}</lastmod></url>\n'
+                   for m in modules for p in m.PAGES)
+    (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
+                                     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                                     f'{urls}</urlset>\n', encoding="utf-8")
+    (OUT / "robots.txt").write_text("# Production robots.txt (WordPress/SEO plugin generates the live one)\n"
+                                    f"User-agent: *\nAllow: /\n\nSitemap: {domain}/sitemap.xml\n",
+                                    encoding="utf-8")
+    (OUT / ".htaccess").write_text(f"""# Production .htaccess for {host} (Apache / LiteSpeed, e.g. Hostinger).
 # Place these rules ABOVE the "# BEGIN WordPress" block; leave the WordPress block unchanged.
 
 <IfModule mod_rewrite.c>
@@ -625,12 +657,10 @@ ExpiresByType text/css "access plus 1 month"
 ExpiresByType application/javascript "access plus 1 month"
 ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
+
+# When TransformativeLifeSolutions.com / TransformativeLeadershipSystems.com go live, 301-redirect
+# these paths to the new domains and update "domain"/"base" in content/{{life,leadership}}.py.
 """, encoding="utf-8")
-    manifest = {"name": site["name"], "short_name": site["word_bottom"], "start_url": "/", "display": "browser",
-                "background_color": "#FFFFFF", "theme_color": site["theme_color"],
-                "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"},
-                          {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png"}]}
-    (root / "site.webmanifest").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
 def hub(sites):
@@ -639,7 +669,7 @@ def hub(sites):
         s = module.SITE
         links = "".join(f'<li><a href="{s["slug"]}/{p["slug"] + "/" if p["slug"] else ""}">{p["label"]}</a></li>'
                         for p in module.PAGES)
-        blocks.append(f'<section><h2>{s["name"]}</h2><p><code>{s["domain"]}</code></p><ul>{links}</ul></section>')
+        blocks.append(f'<section><h2>{s["name"]}</h2><p><code>{site_url(s)}</code></p><ul>{links}</ul></section>')
     html = f'''<!doctype html>
 <html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TLS Wireframes</title>
@@ -659,6 +689,7 @@ def main():
         site_files(module.SITE, module.PAGES)
         for page in module.PAGES:
             print("wrote", render_page(module.SITE, page).relative_to(ROOT))
+    shared_files(sites)
     hub(sites)
 
 
