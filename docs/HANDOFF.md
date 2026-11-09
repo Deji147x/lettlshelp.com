@@ -7,10 +7,14 @@ Written 2026-09-14 when this project moved out of an unrelated session. **Read t
 - **dadstillhere / `dadstillhere.com-landingpage` / the home-folder repo is unrelated.** Don't touch it from this project.
 
 ## Client & brands
-- Owner: **Tanika L. Smith** · LetTLSHelp@gmail.com · +1 (240) 650-0007 · LinkedIn linkedin.com/in/lettlshelp
-- **Transformative Life Solutions** → https://TransformativeLifeSolutions.com: family, parenting, divorce/separation, interpersonal, and workplace (non-consumer-facing only) mediation, plus conflict coaching.
-- **Transformative Leadership Systems** → https://TransformativeLeadershipSystems.com: B2B-only arbitration and med-arb, business mediation, negotiation support (including NDAs), and leadership conflict coaching. The name is **Systems** (the June draft and signature say "Solutions"; that's wrong).
-- Future emails (not active): Services@TransformativeLifeSolutions.com, Services@TransformativeLeadershipSystems.com
+- Owner: **Tanika L. Smith** · +1 (240) 650-0007 · LinkedIn linkedin.com/in/lettlshelp
+- **Both sites launch on lettlshelp.com** (owner's decision, 2026-09-16). Life Solutions at
+  `https://lettlshelp.com/`, Leadership Systems at `https://lettlshelp.com/leadership-systems/`.
+  Canonicals, sitemap, schema, and the shared Search Console token all use those URLs. The vanity
+  domains come later: change `domain`/`base` in `content/{life,leadership}.py` and 301-redirect.
+- **Transformative Life Solutions** (later TransformativeLifeSolutions.com): family, parenting, divorce/separation, interpersonal, and workplace (non-consumer-facing only) mediation, plus conflict coaching. Contact: **services@lettlshelp.com**.
+- **Transformative Leadership Systems** (later TransformativeLeadershipSystems.com): B2B-only arbitration and med-arb, business mediation, negotiation support (including NDAs), and leadership conflict coaching. Contact: **support@lettlshelp.com**. The name is **Systems** (the June draft and signature say "Solutions"; that's wrong).
+- The owner's personal Gmail is no longer published on either site.
 
 ## Source materials (in ~/Downloads)
 - **Source of truth:** `TLS_Website Development Guide_ 09132026.pdf` and `TLS2_Website Development Guide_ 09132026.pdf`. The June 29 drafts in `Guides for Website Design/` are superseded.
@@ -31,10 +35,16 @@ Written 2026-09-14 when this project moved out of an unrelated session. **Read t
 | Git workflow | **As of 2026-09-15, every change goes through a pull request:** create a branch off `main`, commit, push the branch, and open a PR into `main` with `gh pr create`. Don't push directly to `main`. (Commits up to `63a1baf` went straight to `main` before this rule.) The repo is **PUBLIC**, so never commit API keys or passwords. The GA4 Measurement ID and GSC token are fine |
 | Content rule | Never invent credentials, testimonials, client stories, or statistics. Unsourced copy carries a `draft` note that renders as a yellow "Review" flag |
 
-## Current state
-- Commits on `main`: `75088b9` wireframes → `f75fd03` header link removed → `5c40e11` SEO checklist (plus the commit adding this handoff).
-- **⚠️ Not pushed:** GitHub `origin/main` is at `f75fd03`. The pushes failed because the GitHub CLI token in the keyring is invalid and the network was flaky. Fix with `gh auth refresh -h github.com`, then `git push origin main`.
-- Checks run: `seo_check.py` gives 0 failures and 1 warning (Leadership has no Search Console token). No sideways overflow on all 20 pages at 375, 768, and 1280 px. The mobile menu, notes toggle, WebP hero, and preload were verified in the browser. Git history has no secrets.
+## Current state (2026-09-16)
+- **On `main`:** wireframes, the PR workflow, the screening intake pages, and 20 FAQs per site.
+- **Open PR:** `feat/cta-tracking-and-emails` — final lowercase addresses, CTA tracking, and the move
+  to lettlshelp.com.
+- **Built:** 11 pages per site (22 total), including `/begin-intake/`; Life's screening has 14
+  questions, Leadership's 18, with ineligible answers ending the screening.
+- **Checks:** `seo_check.py` 0 failures, 0 warnings. Forms, CTA events, mobile menu, notes toggle,
+  WebP hero, and preload verified in the browser. Git history has no secrets.
+- **Still wireframe-only:** forms submit by opening a prefilled email. Replace with a secure
+  WordPress form before launch (`docs/tracking-and-forms.md`, `docs/screening-form-spec.md`).
 
 ## How to work on it
 ```bash
@@ -53,11 +63,14 @@ python tools/process_assets.py        # only when logos/photos in ~/Downloads ch
 4. Service area and address (for local SEO and `areaServed`).
 5. Credentials, trainings, and roster listings to display; founder portrait; replacement photos (Black and brown elders, families, civic groups); SVG logos plus a horizontal lockup.
 6. How It Works details (session length, fees).
-7. Which domain the GSC token `nueZtT3ZZsV8SutwZKliXMbZEHgZePLeyCRynDhq78c` belongs to; a separate property for Leadership Systems; GA4 Measurement IDs (`G-…`, **not** an API key).
+7. **GA4 Measurement IDs** (`G-…`, **not** an API key) — CTA tracking is wired and waiting for them.
+   (Search Console is settled: the token belongs to the lettlshelp.com property and is on both sites.)
 8. Hosting plan and renewal price; whether Google Workspace fits the budget (see `docs/architecture.md`).
 
 ## Suggested next steps
-1. Fix GitHub auth and push `main`.
+1. Merge the open PR.
 2. Share the wireframe with Tanika (e.g., as a private artifact link) and collect answers to the questions above.
-3. After approval, build the WordPress block theme from `design-system/tokens.json` plus the pattern map in `docs/architecture.md`.
-4. Start the backlink Phase 1 foundations (`docs/backlink-strategy.md`) once the domains are live.
+3. After approval, build the WordPress block theme from `design-system/tokens.json` plus the pattern map in `docs/architecture.md`, as **one install on lettlshelp.com** (Life at the root, Leadership under `/leadership-systems/`).
+4. Rebuild both forms in a WordPress form plugin from `docs/screening-form-spec.md`, then remove the email fallback in `design-system/app.js`.
+5. Add the GA4 Measurement ID and mark `generate_lead` as a key event.
+6. Start the backlink Phase 1 foundations (`docs/backlink-strategy.md`) once the site is live.

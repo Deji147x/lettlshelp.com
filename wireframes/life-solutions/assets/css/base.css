@@ -369,6 +369,21 @@ form.wf-form { background: #FFFFFF; border: 1px solid var(--c-line); border-radi
   background: #FDECEC; border: 1px solid #E5A3A3; color: #8A1C1C; font-size: .95rem;
 }
 
+/* Booking (Google Calendar appointment scheduling) */
+.booking-placeholder {
+  background: #FFFFFF; border: 1px solid var(--c-line); border-radius: var(--radius);
+  padding: clamp(1.75rem, 4vw, 2.5rem); text-align: center; max-width: 720px; margin-bottom: 1.5rem;
+}
+.booking-placeholder .icon { width: 56px; height: 56px; margin: 0 auto .9rem; }
+.booking-placeholder .icon svg { width: 28px; height: 28px; }
+.booking-title { font-family: var(--f-head); font-size: 1.2rem; color: var(--c-deep); margin-bottom: .4rem; }
+.booking-placeholder p:last-child { margin-bottom: 0; color: var(--c-muted); }
+.booking-embed {
+  border: 1px solid var(--c-line); border-radius: var(--radius); overflow: hidden;
+  background: #FFFFFF; margin-bottom: 1.5rem;
+}
+.booking-embed iframe { display: block; width: 100%; min-height: 640px; }
+
 /* Wireframe annotations (toggle) */
 .wf-toggle {
   position: fixed; right: 1rem; bottom: 1rem; z-index: 90; cursor: pointer;

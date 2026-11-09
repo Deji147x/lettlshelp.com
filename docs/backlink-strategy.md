@@ -6,8 +6,10 @@ The goal is a small number of **relevant, trustworthy** links that fit a neutral
 - **No paid links, link farms, private blog networks, or link swaps.** They risk Google penalties and don't fit the practice's ethics posture.
 - **Ethics screen first.** Before listing anywhere, confirm the site isn't aimed at consumer-business disputes or connected to the Consumer Protection Division or the Office of the Attorney General. Check against Maryland Public Ethics Law §5-502 and the "What we do not handle" lists.
 - **Consistent NAP** (name, phone, email, URL) everywhere, matching the website and schema exactly:
-  - Transformative Life Solutions · +1 (240) 650-0007 · https://transformativelifesolutions.com
-  - Transformative Leadership Systems · +1 (240) 650-0007 · https://transformativeleadershipsystems.com
+  - Transformative Life Solutions · +1 (240) 650-0007 · services@lettlshelp.com · https://lettlshelp.com/
+  - Transformative Leadership Systems · +1 (240) 650-0007 · support@lettlshelp.com · https://lettlshelp.com/leadership-systems/
+  - If the vanity domains launch later, update every citation as part of that migration so listings
+    don't point at redirects indefinitely.
 - **Only list real credentials.** Rosters and memberships go on the site only after they're confirmed (see the Credentials slot).
 - **Link to the right site.** Family and interpersonal links go to Life Solutions; B2B, arbitration, and negotiation links go to Leadership Systems.
 - **Verify before acting.** Organizations below are suggestions; confirm each one's current eligibility rules, fees, and listing terms first.

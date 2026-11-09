@@ -32,8 +32,9 @@ def meta(text, attr, name):
     return unescape(m.group(1)) if m else None
 
 
-def page_url(site, slug):
-    return f'{site["domain"]}/{slug + "/" if slug else ""}'
+def page_url(site, slug=""):
+    """Both practices share lettlshelp.com, so each site has a base path under it."""
+    return f'{site["domain"]}{site.get("base", "")}/{slug + "/" if slug else ""}'
 
 
 def check_page(site, page, root, inbound):
@@ -80,7 +81,8 @@ def check_page(site, page, root, inbound):
         if not meta(t, "property", prop):
             fails.append(f"{tag}: missing {prop}")
     og_image = meta(t, "property", "og:image") or ""
-    if og_image.startswith(site["domain"]) and not (root / og_image[len(site["domain"]) + 1:]).exists():
+    prefix = page_url(site)
+    if og_image.startswith(prefix) and not (root / og_image[len(prefix):]).exists():
         fails.append(f"{tag}: og:image file missing")
     if not meta(t, "name", "twitter:card"):
         fails.append(f"{tag}: missing twitter:card")
@@ -144,23 +146,23 @@ def check_site(module):
         if slug and count == 0:
             fails.append(f'{site["slug"]}/{slug}/: orphan page (nothing links to it)')
 
-    sitemap = root / "sitemap.xml"
+    # sitemap.xml, robots.txt and .htaccess are shared: one domain, one WordPress install.
+    sitemap = OUT / "sitemap.xml"
     if not sitemap.exists():
-        fails.append(f'{site["slug"]}: sitemap.xml missing')
+        fails.append("sitemap.xml missing at the site root")
     else:
         locs = set(re.findall(r"<loc>([^<]+)</loc>", sitemap.read_text("utf-8")))
         for page in pages:
             if page_url(site, page["slug"]) not in locs:
-                fails.append(f'{site["slug"]}: sitemap.xml missing {page_url(site, page["slug"])}')
-    robots = root / "robots.txt"
-    robots_text = robots.read_text("utf-8") if robots.exists() else ""
+                fails.append(f'sitemap.xml missing {page_url(site, page["slug"])}')
+    robots_text = (OUT / "robots.txt").read_text("utf-8") if (OUT / "robots.txt").exists() else ""
     if f'Sitemap: {site["domain"]}/sitemap.xml' not in robots_text:
-        fails.append(f'{site["slug"]}: robots.txt missing or has no Sitemap line')
+        fails.append("robots.txt missing or has no Sitemap line")
     if re.search(r"^Disallow: /\s*$", robots_text, re.M):
-        fails.append(f'{site["slug"]}: robots.txt blocks the whole site')
-    htaccess = root / ".htaccess"
+        fails.append("robots.txt blocks the whole site")
+    htaccess = OUT / ".htaccess"
     if not htaccess.exists() or "RewriteCond %{HTTPS} !=on" not in htaccess.read_text("utf-8"):
-        fails.append(f'{site["slug"]}: .htaccess HTTPS redirect missing')
+        fails.append(".htaccess HTTPS redirect missing")
     if not site.get("gsc"):
         warns.append(f'{site["slug"]}: no Search Console token yet (verify via DNS TXT or add token)')
 

@@ -3,7 +3,7 @@
 Sources: 'TLS_Website Development Guide_ 09132026.pdf' (current) and the owner's brief.
 Copy that isn't in those sources carries a `draft` note so it gets owner/legal sign-off.
 """
-from common import (BOOKING_SLOT, COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIALS_SLOT,
+from common import (COMMERCE_SLOT, CONSUMER_DISCLAIMER, CREDENTIALS_SLOT,
                     ETHICS_DISCLAIMER, FOUNDER_PHOTO_SLOT, GSC_TOKEN, LEGAL_REVIEW, PHONE,
                     PRIVACY_OUTLINE, REFERRALS, RULE17, TERMS_OUTLINE)
 from screening import (LIFE_INTRO, LIFE_QUESTIONS, ROLES, STOP_REFERRALS, STOP_TEXT, STOP_TITLE)
@@ -11,7 +11,10 @@ from screening import (LIFE_INTRO, LIFE_QUESTIONS, ROLES, STOP_REFERRALS, STOP_T
 # Owner's instruction (2026-09-16): every call to action on this site goes to this address.
 EMAIL = "services@lettlshelp.com"
 
-SISTER_URL = "https://transformativeleadershipsystems.com"
+# Both practices share lettlshelp.com for now (owner's decision, 2026-09-16). Life Solutions sits
+# at the root; Leadership Systems sits under /leadership-systems/. When the vanity domains go live,
+# change "domain"/"base" here and 301-redirect the old paths.
+SISTER_URL = "https://lettlshelp.com/leadership-systems/"
 
 SITE = {
     "key": "life",
@@ -19,7 +22,8 @@ SITE = {
     "name": "Transformative Life Solutions",
     "word_top": "Transformative",
     "word_bottom": "Life Solutions",
-    "domain": "https://transformativelifesolutions.com",
+    "domain": "https://lettlshelp.com",
+    "base": "",  # served at the domain root; future: TransformativeLifeSolutions.com
     "css": "life.css",
     "fonts": "https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Open+Sans:wght@400;600;700"
              "&family=Playfair+Display:ital@1&display=swap",
@@ -27,8 +31,10 @@ SITE = {
     "og_bg": "#F4F7F8",
     "gsc": GSC_TOKEN,
     "ga4_id": None,  # e.g. "G-XXXXXXXXXX"; a Measurement ID, not an API key
+    # Google Calendar appointment schedule embed URL (ends in ?gv=true). Set it and the booking
+    # section on /contact/ shows the live calendar instead of the placeholder.
+    "booking_url": None,
     "email": EMAIL,
-    "future_email": "Services@TransformativeLifeSolutions.com",
     "footer_blurb": "A private ADR, mediation, and conflict coaching practice offering trauma-informed, "
                     "culturally grounded support for families, individuals, and non-consumer-facing workplaces.",
     "short_disclaimer": "Transformative Life Solutions provides mediation, coaching, and training services only. "
@@ -428,8 +434,9 @@ PAGES = [
              "lede": "Private ADR, Mediation & Conflict Coaching Practice. Serving clients with virtual and "
                      "in‑person options."},
             {"type": "contact", "tone": "white"},
-            {"type": "slot", "wf": "Block: booking embed (Google Calendar appointment schedule)", "tone": "soft",
-             "eyebrow": "Coming soon", "h2": "Book online", **BOOKING_SLOT},
+            {"type": "booking", "wf": "Block: Google Calendar appointment schedule (embed)", "tone": "soft",
+             "eyebrow": "Scheduling", "h2": "Book a consultation",
+             "intro": "Pick a time that works for you once online booking is live."},
         ],
     },
     {

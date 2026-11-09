@@ -55,12 +55,20 @@ INTAKE_SLOT = {
     ],
 }
 
-BOOKING_SLOT = {
-    "label": "Integration slot · Booking",
-    "title": "Schedule a consultation online",
-    "text": "Reserved for future appointment scheduling, planned for Google Workspace: Google Calendar "
-            "appointment schedules with availability syncing, confirmation emails, and rescheduling or "
-            "cancellation. A WordPress booking plugin can replace it later without layout changes.",
+BOOKING_SETUP = {
+    "label": "Setup · Google Calendar",
+    "title": "How to switch this on",
+    "text": "This section is already wired for Google Calendar appointment scheduling (Google "
+            "Workspace). Nothing else on the page needs to change.",
+    "bullets": [
+        "In Google Calendar, create an appointment schedule for consultations and set availability, "
+        "appointment length, and buffer time",
+        "Open <strong>Share → Embed</strong> and copy the URL ending in <code>?gv=true</code>",
+        "Paste it into <code>SITE[\"booking_url\"]</code> in content/life.py or content/leadership.py, "
+        "then rebuild: the live calendar replaces the placeholder",
+        "Google Calendar sends confirmations and handles rescheduling and cancellation; a WordPress "
+        "booking plugin can replace it later without layout changes",
+    ],
 }
 
 COMMERCE_SLOT = {

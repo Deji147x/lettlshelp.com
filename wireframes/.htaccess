@@ -1,4 +1,4 @@
-# Production .htaccess for transformativelifesolutions.com (Apache / LiteSpeed, e.g. Hostinger).
+# Production .htaccess for lettlshelp.com (Apache / LiteSpeed, e.g. Hostinger).
 # Place these rules ABOVE the "# BEGIN WordPress" block; leave the WordPress block unchanged.
 
 <IfModule mod_rewrite.c>
@@ -7,7 +7,7 @@ RewriteEngine On
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-# One canonical host: https://transformativelifesolutions.com (no www)
+# One canonical host: https://lettlshelp.com (no www)
 RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 </IfModule>
@@ -36,3 +36,6 @@ ExpiresByType text/css "access plus 1 month"
 ExpiresByType application/javascript "access plus 1 month"
 ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
+
+# When TransformativeLifeSolutions.com / TransformativeLeadershipSystems.com go live, 301-redirect
+# these paths to the new domains and update "domain"/"base" in content/{life,leadership}.py.

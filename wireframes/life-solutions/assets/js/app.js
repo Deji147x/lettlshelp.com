@@ -37,6 +37,34 @@
   }
 })();
 
+// Call-to-action tracking.
+// Sends GA4 events when a Measurement ID is configured, and always pushes to dataLayer so
+// Google Tag Manager can read the same events. Harmless when neither is installed.
+(function () {
+  function track(name, params) {
+    if (typeof window.gtag === 'function') window.gtag('event', name, params);
+    window.dataLayer = window.dataLayer || [];
+    var payload = { event: name };
+    for (var key in params) if (Object.prototype.hasOwnProperty.call(params, key)) payload[key] = params[key];
+    window.dataLayer.push(payload);
+  }
+  window.tlsTrack = track;
+
+  document.addEventListener('click', function (event) {
+    var el = event.target.closest ? event.target.closest('[data-cta]') : null;
+    if (!el) return;
+    var href = el.getAttribute('href') || '';
+    var kind = href.indexOf('tel:') === 0 ? 'call' : href.indexOf('mailto:') === 0 ? 'email' : 'navigate';
+    track('cta_click', {
+      cta_id: el.getAttribute('data-cta'),
+      cta_page: el.getAttribute('data-cta-page') || '',
+      cta_type: kind,
+      link_url: href,
+      link_text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100)
+    });
+  }, true);
+})();
+
 // Screening + contact forms.
 // Each dropdown answer can reveal guidance and a follow-up box; the answers that make a
 // matter ineligible show the "we cannot assist" notice. Submitting opens the visitor's email
@@ -85,7 +113,15 @@
   function updateStopState(form) {
     var banner = form.querySelector('.stop-banner');
     if (!banner) return;
-    banner.hidden = !form.querySelector('.q.is-stop');
+    var blocked = !!form.querySelector('.q.is-stop');
+    var changed = banner.hidden === blocked;
+    banner.hidden = !blocked;
+    if (blocked && changed && window.tlsTrack) {
+      window.tlsTrack('screening_ineligible', {
+        form_id: 'screening',
+        question: (form.querySelector('.q.is-stop h3') || {}).textContent || ''
+      });
+    }
   }
 
   function collect(form) {
@@ -155,6 +191,13 @@
         return;
       }
       if (error) error.hidden = true;
+
+      var formId = form.classList.contains('intake-form') ? 'screening' : 'contact';
+      if (window.tlsTrack) {
+        // generate_lead is a GA4 recommended event, so it can be marked as a conversion.
+        window.tlsTrack('generate_lead', { form_id: formId, method: 'email' });
+        window.tlsTrack('form_submit', { form_id: formId });
+      }
 
       var body = collect(form);
       try { if (navigator.clipboard) navigator.clipboard.writeText(body); } catch (e) {}

@@ -48,10 +48,13 @@ Every page has a unique title and a meta description of about 110–160 characte
 ## Google Search Console
 Token supplied: `nueZtT3ZZsV8SutwZKliXMbZEHgZePLeyCRynDhq78c`
 
-- **Domain property (recommended):** add a DNS **TXT** record `google-site-verification=nueZtT3ZZsV8SutwZKliXMbZEHgZePLeyCRynDhq78c` at the registrar for the domain it was issued for. This covers http/https and all subdomains.
-- **URL-prefix property:** the wireframe already includes `<meta name="google-site-verification" content="…">` on the Life site. In WordPress, paste it into the SEO plugin or let Site Kit verify.
-- Leadership Systems needs **its own** property and token.
-- After launch, submit each `/sitemap.xml` (or the SEO plugin's sitemap index).
+The token belongs to the **lettlshelp.com** property, which now covers both practices.
+
+- **Domain property (recommended):** add a DNS **TXT** record `google-site-verification=nueZtT3ZZsV8SutwZKliXMbZEHgZePLeyCRynDhq78c` at the registrar for lettlshelp.com. This covers http/https and all subdomains.
+- **URL-prefix property:** every page on both sites already carries `<meta name="google-site-verification" content="…">`. In WordPress, paste it into the SEO plugin or let Site Kit verify.
+- Verification only succeeds once lettlshelp.com actually serves the site.
+- After launch, submit the single `https://lettlshelp.com/sitemap.xml` (or the SEO plugin's sitemap index); it lists all 22 pages across both practices.
+- Each vanity domain will need **its own** property and token when it goes live.
 
 ## Google Analytics 4
 - Create one GA4 property per site. Each gives a **Measurement ID** (`G-XXXXXXXXXX`), which is public and safe to commit.
